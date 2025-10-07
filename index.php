@@ -1,3 +1,7 @@
+<?php
+session_start();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,9 +14,14 @@
   <header>
     <div class="nav-bar">
       <img src="pictures/logo.jpg" alt="Kyla Logo" class="logo" />
-      <div class="nav-actions welcome-user">
-        <span class="welcome-text">👋 Welcome, Rommel</span>
-        <a href="logout.php" class="btn logout-btn">LOG OUT</a>
+      <div class="nav-actions">
+        <?php if (isset($_SESSION['username'])): ?>
+          <span class="welcome-text">👋 Welcome, <?= htmlspecialchars($_SESSION['username']) ?></span>
+          <a href="customer_logout.php" class="btn logout-btn">LOG OUT</a>
+        <?php else: ?>
+          <a href="login.php" class="btn login-btn">LOGIN</a>
+          <a href="registration.php" class="btn signup-btn">SIGN UP</a>
+        <?php endif; ?>
       </div>
     </div>
   </header>
