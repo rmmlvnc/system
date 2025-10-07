@@ -2,65 +2,81 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fresh Food Home Delivery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kyla's Bistro | Customer Page</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-  <header class="navbar">
-    <div class="logo">
-      <img src="pictures/logo.jpg" alt="Fresh Food Logo" />
-    </div>
-    <nav class="nav-menu">
-      <ul class="nav-links">
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Menu</a></li>
-        <li><a href="#">Booking</a></li>
-        <li><a href="#">About Us</a></li>
-      </ul>
-      <div class="auth-buttons">
-        <a href="login.php" class="btn signin">Sign In</a>
-        <a href="registration.php" class="btn signup">Sign Up</a>
+<body class="index">
+  <header>
+    <div class="nav-bar">
+      <img src="pictures/logo.jpg" alt="Kyla Logo" class="logo" />
+      <div class="nav-actions welcome-user">
+        <span class="welcome-text">👋 Welcome, Rommel</span>
+        <a href="logout.php" class="btn logout-btn">LOG OUT</a>
       </div>
-    </nav>
+    </div>
   </header>
 
-  <section class="hero">
-    <div class="hero-text">
-      <h1>Fresh Food Home Delivery</h1>
-      <p>Let’s say you’re drafting the ultimate content marketing strategy. Lorem Ipsum is placeholder text that stands in for meaningful content.</p>
-      <a href="#" class="btn order">Order Now</a>
+  <nav>
+    <ul class="links">
+      <li><a href="customer_page.php" class="active">HOME</a></li>
+      <li><a href="customer_menu.php">MENU</a></li>
+      <li><a href="#">FEEDBACK</a></li>
+      <li><a href="aboutus.php">ABOUT US</a></li>
+    </ul>
+  </nav>
+
+  <section class="main">
+    <aside class="menu-sidebar">
+      <h2 class="menu-title">MENU</h2>
+      <ul class="menu-list">
+        <li><a href="#">Special Burgers</a></li>
+        <li><a href="#">Chicken Burgers</a></li>
+        <li><a href="#">Menu Deals</a></li>
+        <li><a href="#">Sandwiches</a></li>
+        <li><a href="#">Sides</a></li>
+        <li><a href="#">Drinks</a></li>
+        <li><a href="#">Special Offers</a></li>
+      </ul>
+    </aside>
+
+    <div class="product-grid">
+      <div class="product-card">
+        <img src="pictures/burger1.png" alt="Double Angus Burger" />
+        <h3>Double Angus & Bacon Cheeseburger</h3>
+        <p>$50.00</p>
+        <span>Taste the excellence of our tasty burgers...</span>
+      </div>
+      <div class="product-card">
+        <img src="pictures/burger2.png" alt="Spicy Angus Burger" />
+        <h3>Spicy Angus Burger</h3>
+        <p>$45.00</p>
+        <span>Taste the excellence of our tasty burgers...</span>
+      </div>
     </div>
-    <div class="hero-image">
-      <img src="chef.png" alt="Chef holding food" />
-    </div>
+
+    <aside class="order-summary">
+      <h3>MY ORDER</h3>
+      <ul>
+        <li>Double Angus & Bacon Cheeseburger - $50.00</li>
+        <li>Chocolate Mousse - $15.00</li>
+        <li>Delivery - Free</li>
+      </ul>
+      <p><strong>Total: $65.00</strong></p>
+      <button class="confirm-btn">Confirm Order</button>
+    </aside>
   </section>
 
-  <section class="specials">
-    <h4>Specials for you</h4>
-    <h2>Our Popular Dishes</h2>
-    <div class="dish-grid">
-      <div class="dish-card">
-        <img src="potato-salad.jpg" alt="Potato Salad" />
-        <p>Potato Salad</p>
-      </div>
-      <div class="dish-card">
-        <img src="chicken-salad.jpg" alt="Chicken Salad" />
-        <p>Chicken Salad</p>
-      </div>
-      <div class="dish-card">
-        <img src="prawn-soup.jpg" alt="Prawn Soup" />
-        <p>Prawn Soup</p>
-      </div>
-      <div class="dish-card">
-        <img src="vanilla-cheesecake.jpg" alt="Vanilla Cheesecake" />
-        <p>Vanilla Cheesecake</p>
-      </div>
-    </div>
+  <section class="welcome">
+    <h2>Welcome to Kyla's Bistro</h2>
+    <p>
+      Looking for a cozy, stylish spot for your next special event?<br>
+      Kyla's Bistro is now open for event bookings from intimate birthdays, romantic weddings, private meetings, and more.
+    </p>
   </section>
 
-  <footer>
-    <p>&copy; 2025 Fresh Food. All rights reserved.</p>
-  </footer>
+  <section class="banner">
+    <img src="pictures/bg.jpg" alt="bg Kyla's Bistro" />
+  </section>
 </body>
 </html>
