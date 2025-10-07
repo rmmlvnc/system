@@ -28,14 +28,25 @@ body.index {
   gap: 15px;
 }
 
-.welcome-user .welcome-text {
+.nav-actions a{
+  background-color: rgb(255, 6, 6);
+  color: rgb(255, 255, 255);
+  padding: 8px 16px;
+  border-radius: 25px;
+  font-weight: bold;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+.welcome-text {
   background-color: white;
   color: #c00;
   padding: 8px 16px;
   border-radius: 25px;
   font-weight: bold;
   box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  margin-right: 10px;
 }
+
 
 .logout-btn {
   background-color: #fff;
@@ -380,6 +391,23 @@ body.index {
 .form-footer a:hover {
   text-decoration: underline;
 }
+
+/* Two-column layout for registration form */
+.two-column-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
 
 /* Animation */
 @keyframes fadeIn {
