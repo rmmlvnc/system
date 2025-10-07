@@ -26,7 +26,7 @@ body {
 
 .left-panel {
   flex: 1;
-  background: linear-gradient(135deg, #0052cc, #007fff);
+  background: rgb(63, 57, 57);
   color: white;
   display: flex;
   align-items: center;
@@ -42,13 +42,23 @@ body {
   font-size: 60px;
   font-weight: bold;
   background-color: white;
-  color: #0052cc;
+  color: #191e25;
   border-radius: 50%;
   width: 80px;
   height: 80px;
   line-height: 80px;
   margin: 0 auto 20px;
 }
+
+.logo-img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 15px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
 
 .logo h1 {
   font-size: 28px;
