@@ -1,35 +1,52 @@
-<?php 
-session_start(); 
-include 'database.php'; 
-if (!isset($_SESSION['admin'])) { 
-    header("Location: admin.php"); 
-    exit(); 
-    } 
+<?php
+session_start();
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kyla's Bistro | Customer Page</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="index">
+  <header>
+    <div class="nav-bar">
+      <img src="pictures/logo.jpg" alt="Kyla Logo" class="logo" />
+      <div class="nav-actions">
+        <?php if (isset($_SESSION['username'])): ?>
+          <span class="welcome-text">👋 Welcome, <?= htmlspecialchars($_SESSION['username']) ?></span>
+          <a href="customer_logout.php" class="btn logout-btn">LOG OUT</a>
+        <?php else: ?>
+          <a href="login.php" class="btn login-btn">LOGIN</a>
+          <a href="registration.php" class="btn signup-btn">SIGN UP</a>
+        <?php endif; ?>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <ul class="links">
+      <li><a href="index.php">HOME</a></li>
+      <li><a href="menu.php">MENU</a></li>
+      <li><a href="#">FEEDBACK</a></li>
+      <li><a href="aboutus.php" class="active">ABOUT US</a></li>
+    </ul>
+  </nav>
+
+  <section class="main">
     
-    $username = $_SESSION['admin']; 
-    $stmt = $conn->prepare("SELECT first_name, last_name FROM admin WHERE username = ?"); 
-    $stmt->bind_param("s", $username); 
-    $stmt->execute(); 
-    $result = $stmt->get_result(); 
-    $admin = $result->fetch_assoc(); 
-    $full_name = $admin['first_name'] . ' ' . $admin['last_name']; 
-    $stmt->close(); 
-    $conn->close(); 
-    ?> 
-    <!DOCTYPE html> 
-    <html lang="en"> 
-        <head> 
-            <meta charset="UTF-8" /> 
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
-            <title>Admin Dashboard</title> 
-            <link rel="stylesheet" href="dashboard.css" /> 
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" /> 
-        </head> 
-        <body> 
-            <header class="dashboard-header"> 
-                <div class="logo"> 
-                    <img src="pictures/kyla-logo.png" alt="Kyla Logo" class="logo-img" /> 
-                    <span class="logo-text">Kyla's Bistro Admin</span> 
-                </div> 
-                <div class="admin-info"> 
-                    <span>👋 Welcome, <?= htmlspecialchars($full_name) ?></span> <a href="logout_admin.php" class="logout-btn">Logout</a> </div> </header> <main class="dashboard-main"> <h2>Dashboard Overview</h2> <div class="main_grid"> <div class="card"> <i class="fas fa-users"></i> <h3>Manage Users</h3> <p>View and edit customer accounts</p> <a href="manage_users.php">Go</a> </div> <div class="card"> <i class="fas fa-box"></i> <h3>Manage Products</h3> <p>Update menu items and pricing</p> <a href="manage_products.php">Go</a> </div> <div class="card"> <i class="fas fa-receipt"></i> <h3>Orders</h3> <p>Track and fulfill customer orders</p> <a href="manage_orders.php">Go</a> </div> <div class="card"> <i class="fas fa-user-tie"></i> <h3>Manage Staff</h3> <p>View and assign staff roles</p> <a href="manage_staff.php">Go</a> </div> <div class="card"> <i class="fas fa-calendar-check"></i> <h3>Reservations</h3> <p>View and manage table bookings</p> <a href="manage_reservations.php">Go</a> </div> </div> </main> </body> </html>
+  </section>
+  <section class="welcome">
+    <h2>Welcome to Kyla's Bistro</h2>
+    <p>
+      Looking for a cozy, stylish spot for your next special event?<br>
+      Kyla's Bistro is now open for event bookings from intimate birthdays, romantic weddings, private meetings, and more.
+    </p>
+  </section>
+  <section class="banner">
+    <img src="pictures/bg.jpg" alt="bg Kyla's Bistro" />
+  </section>
+</body>
+</html>
