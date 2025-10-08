@@ -28,53 +28,12 @@ session_start();
 
   <nav>
     <ul class="links">
-      <li><a href="customer_page.php" class="active">HOME</a></li>
-      <li><a href="customer_menu.php">MENU</a></li>
+      <li><a href="index.php" class="active">HOME</a></li>
+      <li><a href="menu.php">MENU</a></li>
       <li><a href="#">FEEDBACK</a></li>
       <li><a href="aboutus.php">ABOUT US</a></li>
     </ul>
   </nav>
-
-  <section class="main">
-    <aside class="menu-sidebar">
-      <h2 class="menu-title">MENU</h2>
-      <ul class="menu-list">
-        <li><a href="#">Special Burgers</a></li>
-        <li><a href="#">Chicken Burgers</a></li>
-        <li><a href="#">Menu Deals</a></li>
-        <li><a href="#">Sandwiches</a></li>
-        <li><a href="#">Sides</a></li>
-        <li><a href="#">Drinks</a></li>
-        <li><a href="#">Special Offers</a></li>
-      </ul>
-    </aside>
-
-    <div class="product-grid">
-      <div class="product-card">
-        <img src="pictures/burger1.png" alt="Double Angus Burger" />
-        <h3>Double Angus & Bacon Cheeseburger</h3>
-        <p>$50.00</p>
-        <span>Taste the excellence of our tasty burgers...</span>
-      </div>
-      <div class="product-card">
-        <img src="pictures/burger2.png" alt="Spicy Angus Burger" />
-        <h3>Spicy Angus Burger</h3>
-        <p>$45.00</p>
-        <span>Taste the excellence of our tasty burgers...</span>
-      </div>
-    </div>
-
-    <aside class="order-summary">
-      <h3>MY ORDER</h3>
-      <ul>
-        <li>Double Angus & Bacon Cheeseburger - $50.00</li>
-        <li>Chocolate Mousse - $15.00</li>
-        <li>Delivery - Free</li>
-      </ul>
-      <p><strong>Total: $65.00</strong></p>
-      <button class="confirm-btn">Confirm Order</button>
-    </aside>
-  </section>
 
   <section class="welcome">
     <h2>Welcome to Kyla's Bistro</h2>
@@ -83,6 +42,36 @@ session_start();
       Kyla's Bistro is now open for event bookings from intimate birthdays, romantic weddings, private meetings, and more.
     </p>
   </section>
+  
+  <section class="main">
+    <div class="feature-grid">
+      <div class="feature-card">
+        <img src="pictures/pizza/kassy-kass.jpg" alt="Signature Burger" />
+        <h3>Signature Angus Burger</h3>
+        <p>Crafted with premium beef, melted cheddar, and our secret sauce.</p>
+        <span>₱250</span>
+      </div>
+      <div class="feature-card">
+        <img src="pictures/Pork/back-ribs.jpg" alt="Truffle Pasta" />
+        <h3>Truffle Cream Pasta</h3>
+        <p>Rich, creamy, and infused with aromatic truffle oil.</p>
+        <span>₱280</span>
+      </div>
+      <div class="feature-card">
+        <img src="pictures/milkshake.png" alt="Milkshake" />
+        <h3>Classic Vanilla Milkshake</h3>
+        <p>Thick, creamy, and topped with whipped cream and sprinkles.</p>
+        <span>₱120</span>
+      </div>
+      <div class="feature-card">
+        <img src="pictures/steak.png" alt="Steak" />
+        <h3>Grilled Ribeye Steak</h3>
+        <p>Juicy, tender, and served with garlic butter and sides.</p>
+        <span>₱450</span>
+      </div>
+    </div>
+  </section>
+
 
   <section class="banner">
     <img src="pictures/bg.jpg" alt="bg Kyla's Bistro" />
