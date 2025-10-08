@@ -11,8 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
   if ($admin && $password === $admin['password']) {
-    $_SESSION['admin_id'] = $admin['admin_id'];
-    $_SESSION['admin_name'] = $admin['full_name'];
+    $_SESSION['admin'] = $admin['username']; // ✅ Store admin username in session
     echo "<script>alert('Login successful!'); window.location.href='admin_dashboard.php';</script>";
     exit();
   } else {
