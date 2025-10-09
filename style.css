@@ -435,3 +435,49 @@ body.index {
     font-size: 15px;
   }
 }
+
+
+
+
+
+
+
+
+
+
+/* ----------------------------------- CART --------------------------- */
+.cart-icon {
+  font-size: 22px;
+  margin-left: 15px;
+  text-decoration: none;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: background 0.3s ease;
+  color: #333;
+}
+.cart-icon:hover {
+  background: #4db8ff;
+  color: white;
+}
+
+
+/* ----------------------------------- RESERVATION ---------------------- */
+.reserve-btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 12px 24px;
+  background: #ff7043;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+.reserve-btn:hover {
+  background: #ff5722;
+  transform: translateY(-2px);
+}
