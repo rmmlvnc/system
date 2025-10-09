@@ -2,28 +2,29 @@
 session_start();
 include 'database.php';
 
-if (!isset($_SESSION['staff'])) {
-  header("Location: admin.php");
+if (!isset($_SESSION['staff_id'])) {
+  header("Location: staff_login.php");
   exit();
 }
 
-$staff_username = $_SESSION['staff'];
+$staff_id = $_SESSION['staff_id'];
 
-// Fetch staff info
-$staff_stmt = $conn->prepare("SELECT * FROM staff WHERE username = ?");
-$staff_stmt->bind_param("s", $staff_username);
+$staff_stmt = $conn->prepare("SELECT * FROM staff WHERE staff_id = ?");
+$staff_stmt->bind_param("i", $staff_id);
 $staff_stmt->execute();
 $staff_result = $staff_stmt->get_result();
 $staff = $staff_result->fetch_assoc();
 $staff_stmt->close();
+
 
 // Fetch reservations
 $res_stmt = $conn->prepare("
   SELECT r.*, t.table_number, t.capacity
   FROM reservation r
   LEFT JOIN tables t ON r.table_id = t.table_id
-  ORDER BY r.reservation_date, r.reservation_time
+  ORDER BY r.date, r.time
 ");
+
 $res_stmt->execute();
 $res_result = $res_stmt->get_result();
 
@@ -56,7 +57,7 @@ $product_result = $conn->query("SELECT * FROM product");
     <h2>Your Info</h2>
     <p><strong>Username:</strong> <?php echo htmlspecialchars($staff['username']); ?></p>
     <p><strong>Email:</strong> <?php echo htmlspecialchars($staff['email']); ?></p>
-    <p><strong>Phone:</strong> <?php echo htmlspecialchars($staff['phone_number']); ?></p>
+    <p><strong>Contact Number:</strong> <?php echo htmlspecialchars($staff['contact_number']); ?></p>
   </div>
 
   <div class="section">
@@ -71,8 +72,8 @@ $product_result = $conn->query("SELECT * FROM product");
           <td><?= htmlspecialchars($row['contact']) ?></td>
           <td><?= htmlspecialchars($row['reservation_date']) ?></td>
           <td><?= htmlspecialchars($row['reservation_time']) ?></td>
-          <td><?= htmlspecialchars($row['table_number']) ?></td>
-          <td><?= htmlspecialchars($row['capacity']) ?></td>
+          <td>Table <?= htmlspecialchars($row['table_number']) ?></td>
+          <td><?= htmlspecialchars($row['capacity']) ?> seats</td>
           <td><?= htmlspecialchars($row['status']) ?></td>
         </tr>
       <?php endwhile; ?>
@@ -84,16 +85,20 @@ $product_result = $conn->query("SELECT * FROM product");
     <a href="staff_add_product.php" class="btn">➕ Add Product</a>
     <table>
       <tr>
-        <th>Name</th><th>Description</th><th>Price</th><th>Category</th><th>Sub-Category</th><th>Action</th>
+        <th>Name</th><th>Description</th><th>Image</th><th>Price</th><th>Category</th><th>Action</th>
       </tr>
       <?php while ($prod = $product_result->fetch_assoc()): ?>
         <tr>
           <td><?= htmlspecialchars($prod['product_name']) ?></td>
           <td><?= htmlspecialchars($prod['description']) ?></td>
+          <td>
+            <img src="uploads/<?= htmlspecialchars($prod['image']) ?>" alt="<?= htmlspecialchars($prod['product_name']) ?>" style="width: 80px; height: auto; border-radius: 6px;" />
+          </td>
           <td>₱<?= htmlspecialchars($prod['price']) ?></td>
           <td><?= htmlspecialchars($prod['category_id']) ?></td>
-          <td><?= htmlspecialchars($prod['sub_category_id']) ?></td>
-          <td><a href="staff_edit_product.php?id=<?= $prod['id'] ?>" class="btn">✏️ Edit</a></td>
+          <td>
+            <a href="staff_edit_product.php?id=<?= $prod['product_id'] ?>" class="btn">✏️ Edit</a>
+          </td>
         </tr>
       <?php endwhile; ?>
     </table>
