@@ -2,8 +2,8 @@
 session_start();
 include 'database.php';
 
-if (!isset($_SESSION['staff'])) {
-  header("Location: admin.php");
+if (!isset($_SESSION['staff_id'])) {
+  header("Location: staff_login.php");
   exit();
 }
 
@@ -52,6 +52,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     input, select, button { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #ccc; }
     button { background: #4db8ff; color: white; border: none; cursor: pointer; }
     button:hover { background: #3399ff; }
+    .cancel-btn {
+    display: inline-block;
+    padding: 10px;
+    background: #f10000ff;
+    color: #ffffffff;
+    text-align: center;
+    border-radius: 6px;
+    text-decoration: none;
+    flex-grow: 1;
+  }
+  .cancel-btn:hover {
+    background: #bbb;
+  }
+
   </style>
 </head>
 <body>
@@ -64,12 +78,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <input type="number" name="price" value="<?= htmlspecialchars($product['price']) ?>" required />
       <select name="category_id" required>
         <?php while ($cat = $category_result->fetch_assoc()): ?>
-          <option value="<?= $cat['id'] ?>" <?= $cat['id'] == $product['category_id'] ? 'selected' : '' ?>>
+          <option value="<?= $cat['category_id'] ?>" <?= $cat['category_id'] == $product['category_id'] ? 'selected' : '' ?>>
             <?= htmlspecialchars($cat['category_name']) ?>
           </option>
         <?php endwhile; ?>
       </select>
-      <button type="submit">Update Product</button>
+      <div style="display: flex; gap: 10px;">
+        <button type="submit">Update Product</button>
+        <a href="staff.php" class="cancel-btn">Cancel</a>
+      </div>
     </form>
   </div>
 </body>
