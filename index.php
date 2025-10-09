@@ -36,6 +36,7 @@ session_start();
   </nav>
 
   <section class="welcome">
+    <a href="reservation.php" class="reserve-btn">🍽️ Reserve a Table</a>
     <h2>Welcome to Kyla's Bistro</h2>
     <p>
       Looking for a cozy, stylish spot for your next special event?<br>
