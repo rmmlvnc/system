@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $middle = $_POST['middle_name'];
     $last = $_POST['last_name'];
     $email = $_POST['email'];
-    $phone = $_POST['phone_number'];
+    $contact = $_POST['contact_number'];
     $address = $_POST['address'];
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $confirm_password) {
         $error = "Passwords do not match.";
     } else {
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        $plain_password = $password;
 
         // Check for duplicate email or username
         $check = $pdo->prepare("SELECT * FROM staff WHERE email = :email OR username = :username");
@@ -26,17 +26,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result) {
             $error = "Email or username already registered.";
         } else {
-            $stmt = $pdo->prepare("INSERT INTO staff (username, first_name, middle_name, last_name, email, phone_number, address, password) 
-                                   VALUES (:username, :first, :middle, :last, :email, :phone, :address, :password)");
+            $stmt = $pdo->prepare("INSERT INTO staff (username, first_name, middle_name, last_name, email, contact_number, address, password) 
+                                   VALUES (:username, :first, :middle, :last, :email, :contact, :address, :password)");
             $stmt->execute([
                 'username' => $username,
                 'first' => $first,
                 'middle' => $middle,
                 'last' => $last,
                 'email' => $email,
-                'phone' => $phone,
+                'contact' => $contact,
                 'address' => $address,
-                'password' => $hashed_password
+                'password' => $plain_password
             ]);
             header("Location: staff_login.php");
             exit();
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <div class="form-column">
                     <input type="text" name="middle_name" placeholder="Middle Name">
-                    <input type="text" name="phone_number" placeholder="Phone Number" required>
+                    <input type="text" name="contact_number" placeholder="Contact Number" required>
                     <input type="text" name="address" placeholder="Address" required>
                     <input type="email" name="email" placeholder="Email" required>
                 </div>
