@@ -38,6 +38,38 @@ body {
   background-color: #3399ff;
 }
 
+.payment-table {
+  margin-top: 20px;
+  overflow-x: auto;
+}
+.payment-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 0 8px rgba(0,0,0,0.05);
+}
+
+.payment-table th, .payment-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+  font-size: 14px;
+}
+
+.payment-table th {
+  background-color: #f8f8f8;
+  color: #333;
+}
+
+.payment-table a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.payment-table a:hover {
+  text-decoration: underline;
+}
+
 .dashboard-main {
   padding: 40px;
 }
