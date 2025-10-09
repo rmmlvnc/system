@@ -6,11 +6,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $username = $_POST['username'];
   $password = $_POST['password'];
 
-  // Fetch user from database
-  $sql = "SELECT * FROM customer WHERE username = :username";
-  $stmt = $pdo->prepare($sql);
-  $stmt->execute([':username' => $username]);
-  $user = $stmt->fetch(PDO::FETCH_ASSOC);
+  // Fetch user from database using MySQLi
+  $stmt = $conn->prepare("SELECT * FROM customer WHERE username = ?");
+  $stmt->bind_param("s", $username);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $user = $result->fetch_assoc();
 
   // Compare plain text password
   if ($user && $password === $user['password']) {
@@ -47,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="login-box">
         <h2>Welcome</h2>
         <p>Log in to your account to continue</p>
-        <a href="index.html" class="back-button">← Back to Home</a>
+        <a href="index.php" class="back-button">← Back to Home</a>
         <form method="POST">
           <label for="username">Username</label>
           <input type="text" name="username" placeholder="Enter your username" required />
