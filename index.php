@@ -43,6 +43,16 @@ session_start();
       Kyla's Bistro is now open for event bookings from intimate birthdays, romantic weddings, private meetings, and more.
     </p>
   </section>
+
+  <section class="action-buttons">
+    <h2>Ready to enjoy Kyla's Bistro?</h2>
+    <p>Whether you're dining in or planning a special event, we've got you covered.</p>
+    <div class="button-group">
+      <a href="menu.php" class="btn order-btn">🛍️ Start an Order</a>
+      <a href="reservation.php" class="btn reserve-btn">🍽️ Reserve a Table</a>
+    </div>
+  </section>
+
   
   <section class="main">
     <div class="feature-grid">
