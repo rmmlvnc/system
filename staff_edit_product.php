@@ -32,8 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $price = $_POST['price'];
   $category_id = $_POST['category_id'];
 
-  $update_stmt = $conn->prepare("UPDATE product SET product_name = ?, description = ?, image = ?, price = ?, category_id = ? WHERE product_id = ?");
-  $update_stmt->bind_param("sssiii", $name, $desc, $image, $price, $category_id, $product_id);
+  $stock_quantity = $_POST['stock_quantity'];
+  $update_stmt = $conn->prepare("UPDATE product SET product_name = ?, description = ?, image = ?, price = ?, category_id = ?, stock_quantity = ? WHERE product_id = ?");
+  $update_stmt->bind_param("sssiiii", $name, $desc, $image, $price, $category_id, $stock_quantity, $product_id);
   $update_stmt->execute();
   $update_stmt->close();
 
@@ -76,6 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <input type="text" name="description" value="<?= htmlspecialchars($product['description']) ?>" required />
       <input type="text" name="image" value="<?= htmlspecialchars($product['image']) ?>" />
       <input type="number" name="price" value="<?= htmlspecialchars($product['price']) ?>" required />
+      <label for="stock_quantity">Stock Quantity:</label>
+      <input type="number" name="stock_quantity" value="<?= htmlspecialchars($product['stock_quantity']) ?>" required />
       <select name="category_id" required>
         <?php while ($cat = $category_result->fetch_assoc()): ?>
           <option value="<?= $cat['category_id'] ?>" <?= $cat['category_id'] == $product['category_id'] ? 'selected' : '' ?>>
