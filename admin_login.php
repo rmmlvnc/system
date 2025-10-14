@@ -6,19 +6,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $username = $_POST['username'];
   $password = $_POST['password'];
 
-  $stmt = $pdo->prepare("SELECT * FROM admin WHERE username = ?");
-  $stmt->execute([$username]);
-  $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+  $stmt = $conn->prepare("SELECT * FROM admin WHERE username = ?");
+  $stmt->bind_param("s", $username);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $admin = $result->fetch_assoc();
 
-  if ($admin && $password === $admin['password']) {
-    $_SESSION['admin'] = $admin['username']; // ✅ Store admin username in session
+  if ($admin && $password == $admin['password']) {
+    $_SESSION['admin'] = $admin['username'];
     echo "<script>alert('Login successful!'); window.location.href='admin_dashboard.php';</script>";
     exit();
   } else {
     echo "<script>alert('Invalid credentials.');</script>";
   }
+  
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
