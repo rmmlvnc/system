@@ -1,0 +1,45 @@
+
+-- STEP 2: Add necessary columns to tables
+ALTER TABLE tables 
+  ADD COLUMN IF NOT EXISTS table_type VARCHAR(50) DEFAULT 'Regular',
+  ADD COLUMN IF NOT EXISTS description TEXT,
+  ADD COLUMN IF NOT EXISTS price_per_hour DECIMAL(10,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'Available';
+-- STEP 3: Add columns to reservation table
+ALTER TABLE reservation 
+  ADD COLUMN IF NOT EXISTS event_type VARCHAR(100) DEFAULT 'Regular Dining',
+  ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Pending',
+  ADD COLUMN IF NOT EXISTS guest_count INT DEFAULT 1,
+  ADD COLUMN IF NOT EXISTS special_requests TEXT,
+  ADD COLUMN IF NOT EXISTS total_hours INT DEFAULT 2,
+  ADD COLUMN IF NOT EXISTS total_price DECIMAL(10,2) DEFAULT 0;
+-- STEP 4: Insert Regular Tables (Outside) - 5 tables, max 4 people each
+INSERT INTO tables (table_number, capacity, table_type, description, price_per_hour, status) VALUES
+('O1', 4, 'Regular (Outside)', 'Outdoor patio table with garden view', 0, 'Available'),
+('O2', 4, 'Regular (Outside)', 'Outdoor patio table near fountain', 0, 'Available'),
+('O3', 4, 'Regular (Outside)', 'Outdoor terrace table with sunset view', 0, 'Available'),
+('O4', 4, 'Regular (Outside)', 'Outdoor garden table under pergola', 0, 'Available'),
+('O5', 4, 'Regular (Outside)', 'Outdoor balcony table with city view', 0, 'Available');
+-- STEP 5: Insert Regular Tables (Inside) - 10 tables, max 6 people each
+INSERT INTO tables (table_number, capacity, table_type, description, price_per_hour, status) VALUES
+('I1', 6, 'Regular (Inside)', 'Indoor dining table near window', 0, 'Available'),
+('I2', 6, 'Regular (Inside)', 'Indoor dining table in main hall', 0, 'Available'),
+('I3', 6, 'Regular (Inside)', 'Indoor dining table by the fireplace', 0, 'Available'),
+('I4', 6, 'Regular (Inside)', 'Indoor dining table in cozy corner', 0, 'Available'),
+('I5', 6, 'Regular (Inside)', 'Indoor dining table center location', 0, 'Available'),
+('I6', 6, 'Regular (Inside)', 'Indoor dining table near bar area', 0, 'Available'),
+('I7', 6, 'Regular (Inside)', 'Indoor dining table with booth seating', 0, 'Available'),
+('I8', 6, 'Regular (Inside)', 'Indoor dining table in quiet section', 0, 'Available'),
+('I9', 6, 'Regular (Inside)', 'Indoor dining table with TV view', 0, 'Available'),
+('I10', 6, 'Regular (Inside)', 'Indoor dining table premium location', 0, 'Available');
+-- STEP 6: Insert Birthday Party Rooms - 3 rooms with different capacities
+INSERT INTO tables (table_number, capacity, table_type, description, price_per_hour, status) VALUES
+('B1', 15, 'Birthday Party Room', 'Small party room with decorations, sound system, and cake table', 800.00, 'Available'),
+('B2', 25, 'Birthday Party Room', 'Medium party room with stage, karaoke, and party lights', 1500.00, 'Available'),
+('B3', 40, 'Birthday Party Room', 'Large celebration hall with full party setup and entertainment area', 2500.00, 'Available');
+-- STEP 7: Insert Meeting Rooms - 4 rooms for business/corporate use
+INSERT INTO tables (table_number, capacity, table_type, description, price_per_hour, status) VALUES
+('M1', 8, 'Meeting Room', 'Small conference room with projector, whiteboard, and Wi-Fi', 500.00, 'Available'),
+('M2', 12, 'Meeting Room', 'Medium boardroom with conference table, TV screen, and video conferencing', 800.00, 'Available'),
+('M3', 20, 'Meeting Room', 'Large meeting hall with presentation equipment and breakout area', 1200.00, 'Available'),
+('M4', 30, 'Meeting Room', 'Executive conference hall with premium A/V setup and catering area', 2000.00, 'Available');
