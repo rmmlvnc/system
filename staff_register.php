@@ -18,26 +18,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $plain_password = $password;
 
-        // Check for duplicate email or username
-        $check = $pdo->prepare("SELECT * FROM staff WHERE email = :email OR username = :username");
-        $check->execute(['email' => $email, 'username' => $username]);
-        $result = $check->fetch();
+        $check = $conn->prepare("SELECT * FROM staff WHERE email = ? OR username = ?");
+        $check->bind_param("ss", $email, $username);
+        $check->execute();
+        $result = $check->get_result()->fetch_assoc();
 
         if ($result) {
             $error = "Email or username already registered.";
         } else {
-            $stmt = $pdo->prepare("INSERT INTO staff (username, first_name, middle_name, last_name, email, contact_number, address, password) 
-                                   VALUES (:username, :first, :middle, :last, :email, :contact, :address, :password)");
-            $stmt->execute([
-                'username' => $username,
-                'first' => $first,
-                'middle' => $middle,
-                'last' => $last,
-                'email' => $email,
-                'contact' => $contact,
-                'address' => $address,
-                'password' => $plain_password
-            ]);
+            $stmt = $conn->prepare("INSERT INTO staff (username, first_name, middle_name, last_name, email, contact_number, address, password) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssssssss", $username, $first, $middle, $last, $email, $contact, $address, $plain_password);
+            $stmt->execute();
             header("Location: staff_login.php");
             exit();
         }
