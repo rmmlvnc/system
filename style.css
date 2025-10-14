@@ -109,7 +109,6 @@ body.index {
   border-radius: 12px;
   color: white;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  position: sticky;
   top: 100px;
   height: fit-content;
 }
