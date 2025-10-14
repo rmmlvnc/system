@@ -9,13 +9,39 @@ if (!isset($_SESSION['admin'])) {
 
 $username = $_SESSION['admin'];
 
-$stmt = $pdo->prepare("SELECT first_name FROM admin WHERE username = ?");
-$stmt->execute([$username]);
-$admin = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt = $conn->prepare("SELECT first_name FROM admin WHERE username = ?");
+$stmt->bind_param("s", $username);
+$stmt->execute();
+$result = $stmt->get_result();
+$admin = $result->fetch_assoc();
 $first_name = $admin ? $admin['first_name'] : 'Admin';
 
-$stmt = $pdo->query("SELECT * FROM payment ORDER BY payment_date DESC");
-$payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$result = $conn->query("SELECT * FROM payment ORDER BY payment_date DESC");
+$payments = [];
+if ($result) {
+  while ($row = $result->fetch_assoc()) {
+    $payments[] = $row;
+  }
+}
+
+$order_result = $conn->query("
+  SELECT o.order_id, o.customer_id, o.order_date, o.order_time, o.total_amount,
+         c.first_name, c.last_name,
+         p.payment_status
+  FROM orders o
+  JOIN customer c ON o.customer_id = c.customer_id
+  LEFT JOIN payment p ON o.order_id = p.order_id
+  ORDER BY o.order_date DESC, o.order_time DESC
+");
+
+$orders = [];
+if ($order_result) {
+  while ($row = $order_result->fetch_assoc()) {
+    $orders[] = $row;
+  }
+}
+
+
 
 ?>
 
@@ -92,6 +118,44 @@ $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </table>
           <?php endif; ?>
         </div>
+
+        <div class="dashboard-section">
+          <h3>📦 Recent Orders</h3>
+          <div class="order-table">
+            <?php if (count($orders) === 0): ?>
+              <p>No orders have been placed yet.</p>
+            <?php else: ?>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach ($orders as $order): ?>
+                    <tr>
+                      <td><?= $order['order_id'] ?></td>
+                      <td><?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?></td>
+                      <td><?= $order['order_date'] ?></td>
+                      <td><?= $order['order_time'] ?></td>
+                      <td>₱<?= number_format($order['total_amount'], 2) ?></td>
+                      <td style="color: <?= $order['payment_status'] === 'Paid' ? 'green' : 'red' ?>">
+                        <?= $order['payment_status'] ?? 'Unpaid' ?>
+                      </td>
+
+                    </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            <?php endif; ?>
+          </div>
+        </div>
+
 
       </div>
     </div>
