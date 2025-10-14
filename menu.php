@@ -1,6 +1,7 @@
 <?php
 session_start();
 include ("database.php");
+
 $category_result = $conn->query("SELECT * FROM category");
 
 $category_id = $_GET['category'] ?? null;
@@ -26,8 +27,6 @@ if ($category_id) {
   $selected_category_name = $cat_row['category_name'] ?? null;
   $cat_stmt->close();
 }
-
-
 ?>
 
 <!DOCTYPE html>
@@ -43,11 +42,10 @@ if ($category_id) {
     <div class="nav-bar">
       <img src="pictures/logo.jpg" alt="Kyla Logo" class="logo" />
       <div class="nav-actions">
-        <?php
-          $cart_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
-        ?>
+        <?php $cart_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0; ?>
         <?php if (isset($_SESSION['username'])): ?>
           <span class="welcome-text">👋 Welcome, <?= htmlspecialchars($_SESSION['username']) ?></span>
+          <a href="profile.php" class="btn profile-btn" title="View Profile">👤 Profile</a>
           <a href="cart.php" class="cart-icon" title="View Cart">🛒<?= $cart_count > 0 ? "($cart_count)" : "" ?></a>
           <a href="customer_logout.php" class="btn logout-btn">LOG OUT</a>
         <?php else: ?>
@@ -85,7 +83,6 @@ if ($category_id) {
       </h2>
     <?php endif; ?>
 
-
     <div class="product-grid">
       <?php if ($product_result->num_rows > 0): ?>
         <?php while ($prod = $product_result->fetch_assoc()): ?>
@@ -94,24 +91,78 @@ if ($category_id) {
             <h3><?= htmlspecialchars($prod['product_name']) ?></h3>
             <p>₱<?= htmlspecialchars($prod['price']) ?></p>
             <span><?= htmlspecialchars($prod['description']) ?></span>
-            <form method="POST" action="add_to_cart.php" style="margin-top:10px;">
-              <input type="hidden" name="product_id" value="<?= $prod['product_id'] ?>">
-              <input type="hidden" name="product_name" value="<?= htmlspecialchars($prod['product_name']) ?>">
-              <input type="hidden" name="price" value="<?= $prod['price'] ?>">
-              <input type="hidden" name="category" value="<?= $category_id ?>">
-              <button type="submit" class="btn">🛒 Add to Cart</button>
-            </form>
+
+            <?php if ($prod['stock_quantity'] > 0): ?>
+              <form method="POST" action="add_to_cart.php" style="margin-top:10px;">
+                <input type="hidden" name="product_id" value="<?= $prod['product_id'] ?>">
+                <input type="hidden" name="product_name" value="<?= htmlspecialchars($prod['product_name']) ?>">
+                <input type="hidden" name="price" value="<?= $prod['price'] ?>">
+                <input type="hidden" name="category" value="<?= $category_id ?>">
+
+                <div style="margin: 10px 0;">
+                  <label style="font-weight: bold; margin-right: 10px;">Quantity:</label>
+                  <div style="display: inline-flex; align-items: center; gap: 8px;">
+                    <button type="button" onclick="decreaseQty(this)" style="
+                      padding: 6px 10px;
+                      font-size: 16px;
+                      background-color: #eee;
+                      border: 1px solid #ccc;
+                      border-radius: 4px;
+                      cursor: pointer;
+                    ">−</button>
+
+                    <input type="number" name="quantity" value="1" min="1" max="<?= $prod['stock_quantity'] ?>" style="
+                      width: 50px;
+                      text-align: center;
+                      padding: 6px;
+                      border: 1px solid #ccc;
+                      border-radius: 4px;
+                    " />
+
+                    <button type="button" onclick="increaseQty(this)" style="
+                      padding: 6px 10px;
+                      font-size: 16px;
+                      background-color: #eee;
+                      border: 1px solid #ccc;
+                      border-radius: 4px;
+                      cursor: pointer;
+                    ">+</button>
+                  </div>
+                </div>
+                <button type="submit" class="btn">🛒 Add to Cart</button>
+              </form>
+            <?php else: ?>
+              <p style="color: red; font-weight: bold; margin-top: 10px;">Out of Stock</p>
+            <?php endif; ?>
           </div>
         <?php endwhile; ?>
       <?php else: ?>
         <p style="text-align:center; font-style:italic;">No products found in this category.</p>
       <?php endif; ?>
     </div>
-
   </section>
 
   <section class="banner">
     <img src="pictures/bg.jpg" alt="bg Kyla's Bistro" />
   </section>
+
+  <script>
+    function increaseQty(button) {
+      const input = button.previousElementSibling;
+      const max = parseInt(input.getAttribute('max'));
+      let current = parseInt(input.value);
+      if (current < max) {
+        input.value = current + 1;
+      }
+    }
+
+    function decreaseQty(button) {
+      const input = button.nextElementSibling;
+      let current = parseInt(input.value);
+      if (current > 1) {
+        input.value = current - 1;
+      }
+    }
+  </script>
 </body>
 </html>
