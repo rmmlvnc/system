@@ -17,13 +17,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
   }
 
-  $stmt = $pdo->prepare("SELECT * FROM admin WHERE username = ?");
-  $stmt->execute([$username]);
-  if ($stmt->rowCount() > 0) {
+  $stmt = $conn->prepare("SELECT * FROM admin WHERE username = ?");
+  $stmt->bind_param("s", $username);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  if ($result->num_rows > 0) {
     echo "<script>alert('Username already taken.');</script>";
   } else {
-    $stmt = $pdo->prepare("INSERT INTO admin (username, password, first_name, middle_name, last_name, email, contact_number) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$username, $password, $first_name, $middle_name, $last_name, $email, $contact_number]);
+    $stmt = $conn->prepare("INSERT INTO admin (username, password, first_name, middle_name, last_name, email, contact_number) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssssss", $username, $password, $first_name, $middle_name, $last_name, $email, $contact_number);
+    $stmt->execute();
 
     echo "<script>alert('Admin registered successfully!'); window.location.href='admin_login.php';</script>";
     exit();
