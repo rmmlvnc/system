@@ -44,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
   $date = $_POST['reservation_date'];
   $time = $_POST['reservation_time'];
   $event_type = $_POST['event_type'];
-  $special_requests = $_POST['special_requests'];
   $status = 'Pending';
 
   // Check if reservation table has the new columns
@@ -52,15 +51,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
   if ($check_columns->num_rows == 0) {
     // Add new columns if they don't exist
     $conn->query("ALTER TABLE reservation ADD COLUMN event_type VARCHAR(100) DEFAULT 'Regular Dining'");
-    $conn->query("ALTER TABLE reservation ADD COLUMN special_requests TEXT");
     $conn->query("ALTER TABLE reservation ADD COLUMN status VARCHAR(50) DEFAULT 'Pending'");
   }
 
-  $stmt = $conn->prepare("INSERT INTO reservation (customer_id, table_id, reservation_date, reservation_time, event_type, special_requests, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+  $stmt = $conn->prepare("INSERT INTO reservation (customer_id, table_id, reservation_date, reservation_time, event_type, status) VALUES (?, ?, ?, ?, ?, ?)");
   if (!$stmt) {
     die("Prepare failed: " . $conn->error);
   }
-  $stmt->bind_param("iisssss", $customer_id, $table_id, $date, $time, $event_type, $special_requests, $status);
+  $stmt->bind_param("iisssss", $customer_id, $table_id, $date, $time, $event_type, $status);
   
   if ($stmt->execute()) {
     $message = "Reservation submitted successfully! Our staff will confirm your booking shortly.";
@@ -610,15 +608,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
             </div>
           </div>
 
-          <!-- Step 4: Special Requests -->
-          <div class="form-step">
-            <span class="step-label">Step 4: Special Requests (Optional)</span>
-            <div class="form-group">
-              <label for="special_requests">Any special requirements or dietary restrictions?</label>
-              <textarea name="special_requests" id="special_requests" placeholder="E.g., vegetarian menu, birthday cake, decoration preferences, etc."></textarea>
-            </div>
-          </div>
-
           <button type="submit" class="submit-btn">Confirm Reservation</button>
         </form>
       </div>
@@ -653,11 +642,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
           <h3>📞 Need Help?</h3>
           <div class="contact-item">
             <span>📧</span>
-            <span>info@kylasbistro.com</span>
+            <span>kylasbistro.ph@gmail.com</span>
           </div>
           <div class="contact-item">
             <span>📱</span>
-            <span>+63 123 456 7890</span>
+            <span>+63 917 888 8309</span>
           </div>
           <div class="contact-item">
             <span>🕐</span>
@@ -683,7 +672,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
       
       // Build query based on available columns
       if ($has_event_type && $has_status) {
-        $query = "SELECT r.reservation_id, r.reservation_date, r.reservation_time, r.event_type, r.special_requests, r.status, t.table_number, t.capacity 
+        $query = "SELECT r.reservation_id, r.reservation_date, r.reservation_time, r.event_type, r.status, t.table_number, t.capacity 
                   FROM reservation r 
                   JOIN tables t ON r.table_id = t.table_id 
                   WHERE r.customer_id = ? 
