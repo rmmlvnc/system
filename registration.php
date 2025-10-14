@@ -12,39 +12,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $contact_number = $_POST['contact_number'];
   $address = $_POST['address'];
 
-  // Check if passwords match
   if ($password !== $confirm_password) {
     echo "<script>alert('Passwords do not match. Please try again.');</script>";
   } else {
     // Check for existing username
-    $check = $pdo->prepare("SELECT COUNT(*) FROM customer WHERE username = :username");
-    $check->execute([':username' => $username]);
-    if ($check->fetchColumn() > 0) {
-      echo "<script>alert('Username already exists. Please choose another.');</script>";
-      return;
+    $check = $conn->prepare("SELECT COUNT(*) FROM customer WHERE username = ?");
+    if (!$check) {
+      die("Prepare failed: " . $conn->error);
     }
+    $check->bind_param("s", $username);
+    $check->execute();
+    $check->bind_result($count);
+    $check->fetch();
+    $check->close();
 
-    // Insert plain password (not recommended for production)
-    $sql = "INSERT INTO customer (first_name, middle_name, last_name, username, password, email, contact_number, address)
-            VALUES (:first_name, :middle_name, :last_name, :username, :password, :email, :contact_number, :address)";
+    if ($count > 0) {
+      echo "<script>alert('Username already exists. Please choose another.');</script>";
+    } else {
+      // Insert plain password
+      $stmt = $conn->prepare("INSERT INTO customer (first_name, middle_name, last_name, username, password, email, phone_number, address)
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+      if (!$stmt) {
+        die("Prepare failed: " . $conn->error);
+      }
+      $stmt->bind_param("ssssssss", $first_name, $middle_name, $last_name, $username, $password, $email, $contact_number, $address);
+      $stmt->execute();
+      $stmt->close();
 
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([
-      ':first_name' => $first_name,
-      ':middle_name' => $middle_name,
-      ':last_name' => $last_name,
-      ':username' => $username,
-      ':password' => $password,
-      ':email' => $email,
-      ':contact_number' => $contact_number,
-      ':address' => $address
-    ]);
-
-    echo "<script>alert('Registration successful!'); window.location.href='login.php';</script>";
-    exit();
+      echo "<script>alert('Registration successful!'); window.location.href='login.php';</script>";
+      exit();
+    }
   }
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
