@@ -17,7 +17,6 @@ session_start();
       text-align: center;
       padding: 60px 40px;
       background: linear-gradient(135deg, #fff7f0 0%, #ffe0e0 100%);
-      animation: fadeIn 0.8s ease;
     }
 
     .hero h1 {
@@ -50,12 +49,6 @@ session_start();
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 0;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .reservation-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 32px rgba(0,0,0,0.18);
     }
 
     .reservation-content {
@@ -120,15 +113,8 @@ session_start();
       border-radius: 25px;
       font-weight: bold;
       font-size: 1.1rem;
-      transition: all 0.3s ease;
       box-shadow: 0 6px 16px rgba(204, 0, 0, 0.3);
       align-self: flex-start;
-    }
-
-    .reserve-btn-large:hover {
-      background-color: #a00;
-      transform: translateY(-3px);
-      box-shadow: 0 10px 24px rgba(204, 0, 0, 0.4);
     }
 
     .reservation-image {
@@ -142,11 +128,6 @@ session_start();
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.5s ease;
-    }
-
-    .reservation-card:hover .reservation-image img {
-      transform: scale(1.05);
     }
 
     /* Featured Menu Section */
@@ -198,26 +179,14 @@ session_start();
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-      transition: all 0.3s ease;
       cursor: pointer;
-    }
-
-    .menu-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 10px 24px rgba(0,0,0,0.15);
     }
 
     .menu-card-image {
       width: 100%;
       height: 220px;
       object-fit: cover;
-      transition: transform 0.5s ease;
     }
-
-    .menu-card:hover .menu-card-image {
-      transform: scale(1.1);
-    }
-
     .menu-card-content {
       padding: 20px;
     }
@@ -260,14 +229,7 @@ session_start();
       font-weight: 600;
       font-size: 0.9rem;
       cursor: pointer;
-      transition: all 0.3s ease;
       box-shadow: 0 4px 10px rgba(204, 0, 0, 0.2);
-    }
-
-    .order-btn-small:hover {
-      background-color: #a00;
-      transform: scale(1.05);
-      box-shadow: 0 6px 14px rgba(204, 0, 0, 0.3);
     }
 
     /* CTA Section */
@@ -340,7 +302,6 @@ session_start();
       border-radius: 25px;
       font-weight: bold;
       font-size: 1rem;
-      transition: all 0.3s ease;
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -352,34 +313,10 @@ session_start();
       box-shadow: 0 6px 16px rgba(204, 0, 0, 0.3);
     }
 
-    .cta-btn-primary:hover {
-      background-color: #a00;
-      transform: translateY(-3px);
-      box-shadow: 0 10px 24px rgba(204, 0, 0, 0.4);
-    }
-
     .cta-btn-secondary {
       background: white;
       color: #253745;
       border: 2px solid white;
-    }
-
-    .cta-btn-secondary:hover {
-      background: transparent;
-      color: white;
-      transform: translateY(-3px);
-    }
-
-    /* Animations */
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
     }
 
     /* Responsive Design */
@@ -472,7 +409,7 @@ session_start();
   <section class="reservation-highlight">
     <div class="reservation-card">
       <div class="reservation-content">
-        <h2>🍽️ Reserve Your Table</h2>
+        <h2>Reserve Your Table</h2>
         <p>Looking for a cozy, stylish spot for your next special event? Kyla's Bistro is now open for event bookings from intimate birthdays, romantic weddings, private meetings, and more.</p>
         
         <div class="reservation-features">
