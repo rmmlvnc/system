@@ -118,28 +118,7 @@ $products_result = $conn->query("SELECT product_id, product_name, price, stock_q
 <head>
   <meta charset="UTF-8" />
   <title>Edit Order #<?= $order_id ?></title>
-  <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #f4f6f8; margin: 0; padding: 40px; }
-    .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #e9ecef; padding-bottom: 15px; }
-    .btn { padding: 8px 16px; background: #4db8ff; color: white; border: none; border-radius: 6px; text-decoration: none; cursor: pointer; }
-    .btn:hover { background: #3399ff; }
-    .btn-success { background: #28a745; }
-    .btn-success:hover { background: #218838; }
-    .btn-danger { background: #dc3545; }
-    .btn-danger:hover { background: #c82333; }
-    .order-info { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 25px; }
-    .order-info p { margin: 5px 0; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
-    th { background-color: #f0f2f5; font-weight: 600; }
-    input[type="number"] { width: 80px; padding: 6px; border: 1px solid #ddd; border-radius: 4px; }
-    .add-item { background: #e7f5ff; padding: 20px; border-radius: 6px; margin-top: 20px; }
-    .add-item h3 { margin-top: 0; color: #0066cc; }
-    select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-right: 10px; }
-    .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e9ecef; }
-    .total { font-size: 1.2em; font-weight: bold; text-align: right; margin-top: 15px; color: #0066cc; }
-  </style>
+  <link rel="stylesheet" href="staff_style.css">
 </head>
 <body>
   <div class="container">
