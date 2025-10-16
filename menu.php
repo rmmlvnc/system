@@ -1,6 +1,6 @@
 <?php
 session_start();
-include ("database.php");
+include("database.php");
 
 $category_result = $conn->query("SELECT * FROM category");
 
@@ -27,6 +27,21 @@ if ($category_id) {
   $selected_category_name = $cat_row['category_name'] ?? null;
   $cat_stmt->close();
 }
+
+// Get cart count from database if user is logged in
+$cart_count = 0;
+if (isset($_SESSION['username']) && isset($_SESSION['cart_order_id'])) {
+  $order_id = $_SESSION['cart_order_id'];
+  $cart_count_stmt = $conn->prepare("SELECT SUM(quantity) as total_items FROM order_item WHERE order_id = ?");
+  if ($cart_count_stmt) {
+    $cart_count_stmt->bind_param("i", $order_id);
+    $cart_count_stmt->execute();
+    $cart_count_result = $cart_count_stmt->get_result();
+    $cart_count_row = $cart_count_result->fetch_assoc();
+    $cart_count = $cart_count_row['total_items'] ?? 0;
+    $cart_count_stmt->close();
+  }
+}
 ?>
 
 <!DOCTYPE html>
@@ -42,11 +57,10 @@ if ($category_id) {
     <div class="nav-bar">
       <img src="pictures/logo.jpg" alt="Kyla Logo" class="logo" />
       <div class="nav-actions">
-        <?php $cart_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0; ?>
         <?php if (isset($_SESSION['username'])): ?>
           <span class="welcome-text">👋 Welcome, <?= htmlspecialchars($_SESSION['username']) ?></span>
           <a href="profile.php" class="btn profile-btn" title="View Profile">👤 Profile</a>
-          <a href="cart.php" class="cart-icon" title="View Cart">🛒<?= $cart_count > 0 ? "($cart_count)" : "" ?></a>
+          <a href="cart.php" class="cart-icon" title="View Cart">🛒<?= $cart_count > 0 ? " ($cart_count)" : "" ?></a>
           <a href="customer_logout.php" class="btn logout-btn">LOG OUT</a>
         <?php else: ?>
           <a href="login.php" class="btn login-btn">LOGIN</a>
@@ -87,50 +101,54 @@ if ($category_id) {
       <?php if ($product_result->num_rows > 0): ?>
         <?php while ($prod = $product_result->fetch_assoc()): ?>
           <div class="product-card">
-            <img src="uploads/<?= htmlspecialchars($prod['image']) ?>" alt="<?= htmlspecialchars($prod['product_name']) ?>" />
+            <img src="uploads/<?= htmlspecialchars($prod['image']) ?>" alt="<?= htmlspecialchars($prod['product_name']) ?>" onerror="this.src='uploads/placeholder.jpg'" />
             <h3><?= htmlspecialchars($prod['product_name']) ?></h3>
-            <p>₱<?= htmlspecialchars($prod['price']) ?></p>
+            <p>₱<?= number_format($prod['price'], 2) ?></p>
             <span><?= htmlspecialchars($prod['description']) ?></span>
 
             <?php if ($prod['stock_quantity'] > 0): ?>
-              <form method="POST" action="add_to_cart.php" style="margin-top:10px;">
-                <input type="hidden" name="product_id" value="<?= $prod['product_id'] ?>">
-                <input type="hidden" name="product_name" value="<?= htmlspecialchars($prod['product_name']) ?>">
-                <input type="hidden" name="price" value="<?= $prod['price'] ?>">
-                <input type="hidden" name="category" value="<?= $category_id ?>">
+              <?php if (isset($_SESSION['username'])): ?>
+                <form method="POST" action="add_to_cart.php" style="margin-top:10px;">
+                  <input type="hidden" name="product_id" value="<?= $prod['product_id'] ?>">
+                  <input type="hidden" name="category" value="<?= $category_id ?>">
 
-                <div style="margin: 10px 0;">
-                  <label style="font-weight: bold; margin-right: 10px;">Quantity:</label>
-                  <div style="display: inline-flex; align-items: center; gap: 8px;">
-                    <button type="button" onclick="decreaseQty(this)" style="
-                      padding: 6px 10px;
-                      font-size: 16px;
-                      background-color: #eee;
-                      border: 1px solid #ccc;
-                      border-radius: 4px;
-                      cursor: pointer;
-                    ">−</button>
+                  <div style="margin: 10px 0;">
+                    <label style="font-weight: bold; margin-right: 10px;">Quantity:</label>
+                    <div style="display: inline-flex; align-items: center; gap: 8px;">
+                      <button type="button" onclick="decreaseQty(this)" style="
+                        padding: 6px 10px;
+                        font-size: 16px;
+                        background-color: #eee;
+                        border: 1px solid #ccc;
+                        border-radius: 4px;
+                        cursor: pointer;
+                      ">−</button>
 
-                    <input type="number" name="quantity" value="1" min="1" max="<?= $prod['stock_quantity'] ?>" style="
-                      width: 50px;
-                      text-align: center;
-                      padding: 6px;
-                      border: 1px solid #ccc;
-                      border-radius: 4px;
-                    " />
+                      <input type="number" name="quantity" value="1" min="1" max="<?= $prod['stock_quantity'] ?>" style="
+                        width: 50px;
+                        text-align: center;
+                        padding: 6px;
+                        border: 1px solid #ccc;
+                        border-radius: 4px;
+                      " />
 
-                    <button type="button" onclick="increaseQty(this)" style="
-                      padding: 6px 10px;
-                      font-size: 16px;
-                      background-color: #eee;
-                      border: 1px solid #ccc;
-                      border-radius: 4px;
-                      cursor: pointer;
-                    ">+</button>
+                      <button type="button" onclick="increaseQty(this)" style="
+                        padding: 6px 10px;
+                        font-size: 16px;
+                        background-color: #eee;
+                        border: 1px solid #ccc;
+                        border-radius: 4px;
+                        cursor: pointer;
+                      ">+</button>
+                    </div>
                   </div>
-                </div>
-                <button type="submit" class="btn">🛒 Add to Cart</button>
-              </form>
+                  <button type="submit" class="btn">🛒 Add to Cart</button>
+                </form>
+              <?php else: ?>
+                <p style="margin-top: 10px; font-style: italic; color: #666;">
+                  <a href="login.php" style="color: #c00; text-decoration: underline; font-weight: 600;">Login</a> to add items to cart
+                </p>
+              <?php endif; ?>
             <?php else: ?>
               <p style="color: red; font-weight: bold; margin-top: 10px;">Out of Stock</p>
             <?php endif; ?>
