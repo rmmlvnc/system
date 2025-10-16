@@ -415,8 +415,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
     <a href="index.php" class="back-link">← Back to Home</a>
 
     <div class="header">
-      <h1>🍽️ Reserve Your Table</h1>
-      <p>Book your perfect dining experience at Kyla's Bistro</p>
+      <h1>Reserve Your Table</h1>
+      <p>Reserve now! perfect dining experience at Kyla's Bistro</p>
     </div>
 
     <?php if ($message): ?>
@@ -424,22 +424,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
         <?= $message ?>
       </div>
     <?php endif; ?>
-
-    <!-- Need Help Section -->
-    <div class="card" style="background: linear-gradient(135deg, #253745 0%, #2f4f4f 100%); color: white;">
-      <h2 class="card-title" style="color: white; border-bottom-color: white;">📞 Need Help?</h2>
-      <div style="display: grid; gap: 15px;">
-        <div>
-          <strong>Phone:</strong> <?= htmlspecialchars($phone ?? '(02) 8123-4567') ?>
-        </div>
-        <div>
-          <strong>Email:</strong> <?= htmlspecialchars($email ?? 'reservations@kylasbistro.com') ?>
-        </div>
-        <div>
-          <strong>Hours:</strong> Daily 10:00 AM - 10:00 PM
-        </div>
-      </div>
-    </div>
 
     <div class="card">
       <h2 class="card-title">Make a Reservation</h2>
@@ -626,6 +610,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
           <p>📅 You don't have any reservations yet.</p>
         </div>
       <?php endif; ?>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, #253745 0%, #2f4f4f 100%); color: white;">
+      <h2 class="card-title" style="color: white; border-bottom-color: white;">📞 Need Help?</h2>
+      <div style="display: grid; gap: 15px;">
+        <div>
+          <strong>Phone:</strong> <?= htmlspecialchars($phone ?? '(02) 8123-4567') ?>
+        </div>
+        <div>
+          <strong>Email:</strong> <?= htmlspecialchars($email ?? 'reservations@kylasbistro.com') ?>
+        </div>
+        <div>
+          <strong>Hours:</strong> Daily 10:00 AM - 10:00 PM
+        </div>
+      </div>
     </div>
   </div>
 
