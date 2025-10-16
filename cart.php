@@ -26,7 +26,6 @@ $customer_id = $cust_row['customer_id'];
 $cust_stmt->close();
 
 // Check if customer has a temporary/pending order (acts as cart)
-// We'll use order_id stored in session or find the latest incomplete order
 if (!isset($_SESSION['cart_order_id'])) {
   // Try to find an existing pending order
   $order_check = $conn->prepare("
@@ -60,7 +59,7 @@ if (isset($_SESSION['cart_order_id'])) {
   
   // Fetch cart items from order_item
   $cart_stmt = $conn->prepare("
-    SELECT oi.product_id, oi.quantity, p.product_name, p.price, p.image, oi.total_price
+    SELECT oi.product_id, oi.quantity, p.product_name, p.price, p.image, p.stock_quantity, oi.total_price
     FROM order_item oi
     JOIN product p ON oi.product_id = p.product_id
     WHERE oi.order_id = ?
@@ -75,12 +74,12 @@ if (isset($_SESSION['cart_order_id'])) {
   $cart_result = $cart_stmt->get_result();
   
   while ($row = $cart_result->fetch_assoc()) {
-    $price = $row['total_price'] / $row['quantity']; // Calculate unit price
     $cart[$row['product_id']] = [
       'product_name' => $row['product_name'],
-      'price' => (float)$price,
+      'price' => (float)$row['price'],
       'image' => $row['image'],
-      'quantity' => (int)$row['quantity']
+      'quantity' => (int)$row['quantity'],
+      'stock_quantity' => (int)$row['stock_quantity']
     ];
     $subtotal += $row['total_price'];
   }
@@ -490,7 +489,7 @@ $total = $subtotal;
         <div class="cart-items">
           <?php foreach ($cart as $id => $item): ?>
             <div class="cart-item">
-              <img src="pictures/<?= htmlspecialchars($item['image'] ?? 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($item['product_name']) ?>" class="item-image" onerror="this.src='pictures/placeholder.jpg'">
+              <img src="uploads/<?= htmlspecialchars($item['image'] ?? 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($item['product_name']) ?>" class="item-image" onerror="this.src='uploads/placeholder.jpg'">
               
               <div class="item-details">
                 <div class="item-name"><?= htmlspecialchars($item['product_name']) ?></div>
@@ -507,8 +506,8 @@ $total = $subtotal;
                   <form method="POST" action="update_cart.php" class="quantity-edit-form" id="qty-edit-<?= $id ?>">
                     <input type="hidden" name="item_id" value="<?= $id ?>">
                     <button type="button" class="quantity-btn" onclick="decreaseQuantity(<?= $id ?>)">−</button>
-                    <input type="number" class="quantity-input" name="quantity" id="qty-input-<?= $id ?>" value="<?= $item['quantity'] ?>" min="1" max="99">
-                    <button type="button" class="quantity-btn" onclick="increaseQuantity(<?= $id ?>)">+</button>
+                    <input type="number" class="quantity-input" name="quantity" id="qty-input-<?= $id ?>" value="<?= $item['quantity'] ?>" min="1" max="<?= $item['stock_quantity'] ?>">
+                    <button type="button" class="quantity-btn" onclick="increaseQuantity(<?= $id ?>, <?= $item['stock_quantity'] ?>)">+</button>
                     <button type="submit" class="btn btn-save">✓ Save</button>
                     <button type="button" class="btn btn-cancel" onclick="cancelEdit(<?= $id ?>, <?= $item['quantity'] ?>)">✕</button>
                   </form>
@@ -524,7 +523,7 @@ $total = $subtotal;
                   <button class="btn btn-edit" id="btn-edit-<?= $id ?>" onclick="enableEdit(<?= $id ?>)">
                     ✏️ Edit
                   </button>
-                  <a href="remove_from_cart.php?id=<?= $id ?>" class="btn btn-remove" onclick="return confirm('Remove this item from cart?')">
+                  <a href="remove_from_cart.php?id=<?= $id ?>" class="btn btn-remove" onclick="return confirm('Are you sure you want to remove this item from your cart?')">
                     🗑️ Remove
                   </a>
                 </div>
@@ -575,15 +574,19 @@ $total = $subtotal;
       document.getElementById('btn-edit-' + itemId).style.display = 'inline-flex';
     }
 
-    function increaseQuantity(itemId) {
+    function increaseQuantity(itemId, maxStock) {
       const input = document.getElementById('qty-input-' + itemId);
-      input.value = parseInt(input.value) + 1;
+      const currentValue = parseInt(input.value);
+      if (currentValue < maxStock) {
+        input.value = currentValue + 1;
+      }
     }
 
     function decreaseQuantity(itemId) {
       const input = document.getElementById('qty-input-' + itemId);
-      if (parseInt(input.value) > 1) {
-        input.value = parseInt(input.value) - 1;
+      const currentValue = parseInt(input.value);
+      if (currentValue > 1) {
+        input.value = currentValue - 1;
       }
     }
   </script>
