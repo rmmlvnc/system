@@ -17,11 +17,17 @@ $staff_result = $staff_stmt->get_result();
 $staff = $staff_result->fetch_assoc();
 $staff_stmt->close();
 
-// Fetch reservations
+// Fetch reservations - JOIN with customer table
 $res_stmt = $conn->prepare("
-  SELECT r.*, t.table_number, t.capacity
+  SELECT 
+    r.*,
+    t.table_number,
+    t.capacity,
+    CONCAT(c.first_name, ' ', c.last_name) as customer_name,
+    c.phone_number
   FROM reservation r
   LEFT JOIN tables t ON r.table_id = t.table_id
+  LEFT JOIN customer c ON r.customer_id = c.customer_id
   ORDER BY r.reservation_date, r.reservation_time
 ");
 $res_stmt->execute();
@@ -55,8 +61,18 @@ if ($orders_stmt) {
   $prepare_error = $conn->error;
 }
 
-// Fetch products
-$product_result = $conn->query("SELECT * FROM product");
+// Fetch products with category names
+$product_stmt = $conn->prepare("
+  SELECT 
+    p.*,
+    c.category_name
+  FROM product p
+  LEFT JOIN category c ON p.category_id = c.category_id
+  ORDER BY p.product_name
+");
+$product_stmt->execute();
+$product_result = $product_stmt->get_result();
+$product_stmt->close();
 ?>
 
 <!DOCTYPE html>
@@ -111,16 +127,30 @@ $product_result = $conn->query("SELECT * FROM product");
       display: inline-block;
     }
 
+    .btn:hover {
+      background: #c82333;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+
     .btn-edit { 
       background: #28a745;
       padding: 8px 16px;
       font-size: 14px;
     }
+
+    .btn-edit:hover {
+      background: #218838;
+    }
     
     .btn-view { 
-      background: blue;
+      background: #007bff;
       padding: 8px 16px;
       font-size: 14px;
+    }
+
+    .btn-view:hover {
+      background: #0056b3;
     }
     
     .info-card {
@@ -359,19 +389,21 @@ $product_result = $conn->query("SELECT * FROM product");
               <th>Date</th>
               <th>Time</th>
               <th>Table</th>
-              <th>Capacity</th>
+              <th>Event Type</th>
+              <th>Guests</th>
               <th>Status</th>
             </tr>
           </thead>
           <tbody>
             <?php while ($row = $res_result->fetch_assoc()): ?>
               <tr>
-                <td><?= htmlspecialchars($row['customer_name']) ?></td>
-                <td><?= htmlspecialchars($row['contact']) ?></td>
+                <td><?= $row['customer_name'] ? htmlspecialchars($row['customer_name']) : '<em style="color: #999;">N/A</em>' ?></td>
+                <td><?= $row['phone_number'] ? htmlspecialchars($row['phone_number']) : '<em style="color: #999;">N/A</em>' ?></td>
                 <td><?= date('M d, Y', strtotime($row['reservation_date'])) ?></td>
                 <td><?= date('h:i A', strtotime($row['reservation_time'])) ?></td>
-                <td>Table <?= htmlspecialchars($row['table_number']) ?></td>
-                <td><?= htmlspecialchars($row['capacity']) ?> seats</td>
+                <td><?= $row['table_number'] ? 'Table ' . htmlspecialchars($row['table_number']) : '<em style="color: #999;">Not assigned</em>' ?></td>
+                <td><?= $row['event_type'] ? htmlspecialchars($row['event_type']) : '<em style="color: #999;">N/A</em>' ?></td>
+                <td><?= $row['total_hours'] ? htmlspecialchars($row['total_hours']) . ' hours' : '<em style="color: #999;">N/A</em>' ?></td>
                 <td>
                   <span class="badge badge-<?= strtolower($row['status']) ?>">
                     <?= htmlspecialchars($row['status']) ?>
@@ -416,12 +448,13 @@ $product_result = $conn->query("SELECT * FROM product");
                 <td>
                   <img src="uploads/<?= htmlspecialchars($prod['image']) ?>" 
                        alt="<?= htmlspecialchars($prod['product_name']) ?>" 
-                       class="product-img" />
+                       class="product-img"
+                       onerror="this.src='uploads/placeholder.jpg'" />
                 </td>
                 <td><strong><?= htmlspecialchars($prod['product_name']) ?></strong></td>
                 <td><?= htmlspecialchars(substr($prod['description'], 0, 50)) ?>...</td>
                 <td><strong>₱<?= number_format($prod['price'], 2) ?></strong></td>
-                <td><?= htmlspecialchars($prod['category_id']) ?></td>
+                <td><?= $prod['category_name'] ? htmlspecialchars($prod['category_name']) : '<em style="color: #999;">Uncategorized</em>' ?></td>
                 <td><?= htmlspecialchars($prod['stock_quantity']) ?></td>
                 <td>
                   <a href="staff_edit_product.php?id=<?= $prod['product_id'] ?>" class="btn btn-edit">Edit</a>
