@@ -6,14 +6,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $username = $_POST['username'];
   $password = $_POST['password'];
 
-  // Fetch user from database using MySQLi
   $stmt = $conn->prepare("SELECT * FROM customer WHERE username = ?");
   $stmt->bind_param("s", $username);
   $stmt->execute();
   $result = $stmt->get_result();
   $user = $result->fetch_assoc();
 
-  // Compare plain text password
   if ($user && $password === $user['password']) {
     $_SESSION['customer_id'] = $user['customer_id'];
     $_SESSION['username'] = $user['username'];
@@ -24,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 }
 ?>
+
 
 
 <!DOCTYPE html>
