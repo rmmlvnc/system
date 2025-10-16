@@ -26,7 +26,7 @@ body {
 
 .left-panel {
   flex: 1;
-  background: rgb(63, 57, 57);
+  background: #2c1810;
   color: white;
   display: flex;
   align-items: center;
