@@ -47,27 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
   <meta charset="UTF-8" />
   <title>Edit Product</title>
-  <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #f4f6f8; padding: 40px; }
-    .form-box { background: white; padding: 30px; border-radius: 10px; max-width: 500px; margin: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    input, select, button { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #ccc; }
-    button { background: #4db8ff; color: white; border: none; cursor: pointer; }
-    button:hover { background: #3399ff; }
-    .cancel-btn {
-    display: inline-block;
-    padding: 10px;
-    background: #f10000ff;
-    color: #ffffffff;
-    text-align: center;
-    border-radius: 6px;
-    text-decoration: none;
-    flex-grow: 1;
-  }
-  .cancel-btn:hover {
-    background: #bbb;
-  }
-
-  </style>
+  <link rel="stylesheet" href="staff_style.css">
 </head>
 <body>
   <div class="form-box">
