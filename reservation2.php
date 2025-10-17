@@ -13,6 +13,9 @@ $messageType = "";
 
 // Get customer_id from username
 $cust_stmt = $conn->prepare("SELECT customer_id, first_name, middle_name, last_name, email, phone_number FROM customer WHERE username = ?");
+if (!$cust_stmt) {
+  die("Prepare failed: " . $conn->error);
+}
 $cust_stmt->bind_param("s", $customer);
 $cust_stmt->execute();
 $cust_result = $cust_stmt->get_result();
@@ -26,6 +29,9 @@ $phone = $cust_row['phone_number'];
 if (isset($_POST['cancel_reservation_id'])) {
   $reservation_id = $_POST['cancel_reservation_id'];
   $cancel_stmt = $conn->prepare("DELETE FROM reservation WHERE reservation_id = ? AND customer_id = ?");
+  if (!$cancel_stmt) {
+    die("Prepare failed: " . $conn->error);
+  }
   $cancel_stmt->bind_param("ii", $reservation_id, $customer_id);
   $cancel_stmt->execute();
   $message = "Reservation cancelled successfully!";
@@ -38,35 +44,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
   $date = $_POST['reservation_date'];
   $time = $_POST['reservation_time'];
   $event_type = $_POST['event_type'];
-  $total_hours = $_POST['total_hours'] ?? 2;
   $status = 'Pending';
-  
-  // Get table info
-  $table_stmt = $conn->prepare("SELECT capacity, price_per_hour FROM tables WHERE table_id = ?");
-  $table_stmt->bind_param("i", $table_id);
-  $table_stmt->execute();
-  $table_result = $table_stmt->get_result();
-  $table_row = $table_result->fetch_assoc();
-  $guest_count = $table_row['capacity'];
-  $price_per_hour = $table_row['price_per_hour'] ?? 0;
-  $total_price = $price_per_hour * $total_hours;
-  $table_stmt->close();
 
-  $stmt = $conn->prepare("INSERT INTO reservation (customer_id, table_id, reservation_date, reservation_time, event_type, status, guest_count, total_hours, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-  $stmt->bind_param("iissssiid", $customer_id, $table_id, $date, $time, $event_type, $status, $guest_count, $total_hours, $total_price);
+  // Check if reservation table has the new columns
+  $check_columns = $conn->query("SHOW COLUMNS FROM reservation LIKE 'event_type'");
+  if ($check_columns->num_rows == 0) {
+    // Add new columns if they don't exist
+    $conn->query("ALTER TABLE reservation ADD COLUMN event_type VARCHAR(100) DEFAULT 'Regular Dining'");
+    $conn->query("ALTER TABLE reservation ADD COLUMN status VARCHAR(50) DEFAULT 'Pending'");
+  }
+
+  $stmt = $conn->prepare("INSERT INTO reservation (customer_id, table_id, reservation_date, reservation_time, event_type, status) VALUES (?, ?, ?, ?, ?, ?)");
+  if (!$stmt) {
+    die("Prepare failed: " . $conn->error);
+  }
+  $stmt->bind_param("iisssss", $customer_id, $table_id, $date, $time, $event_type, $status);
   
   if ($stmt->execute()) {
-    if ($total_price > 0) {
-      $message = "Reservation submitted successfully! Total Cost: ₱" . number_format($total_price, 2) . ". Our staff will confirm your booking shortly.";
-    } else {
-      $message = "Reservation submitted successfully! Our staff will confirm your booking shortly.";
-    }
+    $message = "Reservation submitted successfully! Our staff will confirm your booking shortly.";
     $messageType = "success";
   } else {
     $message = "Error: " . $stmt->error;
     $messageType = "error";
   }
-  $stmt->close();
 }
 ?>
 <!DOCTYPE html>
@@ -75,27 +75,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Reserve a Table | Kyla's Bistro</title>
+  <link rel="stylesheet" href="style.css" />
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(135deg, #fff7f0 0%, #ffe0e0 100%);
+      margin: 0;
+      padding: 0;
       min-height: 100vh;
-      padding: 20px;
     }
 
-    .container {
-      max-width: 1200px;
+    .reservation-wrapper {
+      max-width: 1400px;
       margin: 0 auto;
+      padding: 40px 20px;
     }
 
     .back-link {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       padding: 10px 20px;
       background-color: #c00;
       color: white;
@@ -103,118 +102,149 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
       border-radius: 25px;
       font-weight: 600;
       margin-bottom: 30px;
-      transition: all 0.3s;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(204, 0, 0, 0.2);
     }
 
     .back-link:hover {
       background-color: #a00;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(204, 0, 0, 0.3);
     }
 
-    .header {
+    .page-header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 50px;
     }
 
-    .header h1 {
-      font-size: 2.5rem;
+    .page-header h1 {
+      font-size: 3rem;
       color: #253745;
       margin-bottom: 10px;
     }
 
-    .header p {
-      font-size: 1.1rem;
+    .page-header p {
+      font-size: 1.2rem;
       color: #666;
     }
 
+    .reservation-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 30px;
+      margin-bottom: 50px;
+    }
+
+    .reservation-form-card,
+    .reservation-info-card {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .card-title {
+      font-size: 1.8rem;
+      color: #253745;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 3px solid #c00;
+    }
+
     .message {
-      padding: 15px;
+      padding: 15px 20px;
       border-radius: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       font-weight: 600;
       text-align: center;
+      animation: slideDown 0.5s ease;
     }
 
     .message.success {
       background-color: #d4edda;
       color: #155724;
+      border: 1px solid #c3e6cb;
     }
 
     .message.error {
       background-color: #f8d7da;
       color: #721c24;
+      border: 1px solid #f5c6cb;
     }
 
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 30px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    .form-step {
       margin-bottom: 30px;
     }
 
-    .card-title {
-      font-size: 1.5rem;
-      color: #253745;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #c00;
-    }
-
-    .form-section {
-      margin-bottom: 25px;
-    }
-
-    .form-label {
-      display: block;
-      font-weight: 600;
-      color: #253745;
-      margin-bottom: 10px;
+    .step-label {
       font-size: 0.9rem;
+      color: #c00;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+      display: block;
     }
 
     .event-types {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 15px;
+      margin-bottom: 25px;
     }
 
-    .event-option input[type="radio"] {
+    .event-type-option {
+      position: relative;
+    }
+
+    .event-type-option input[type="radio"] {
       display: none;
     }
 
-    .event-label {
-      display: block;
+    .event-type-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 20px;
       background: #f8f9fa;
       border: 2px solid #e0e0e0;
-      border-radius: 10px;
-      text-align: center;
+      border-radius: 12px;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all 0.3s ease;
+      text-align: center;
     }
 
-    .event-option input[type="radio"]:checked + .event-label {
+    .event-type-option input[type="radio"]:checked + .event-type-label {
       background: #fff7f0;
       border-color: #c00;
+      box-shadow: 0 4px 12px rgba(204, 0, 0, 0.15);
     }
 
-    .event-label:hover {
+    .event-type-label:hover {
       border-color: #c00;
+      transform: translateY(-3px);
     }
 
     .event-icon {
       font-size: 2rem;
-      margin-bottom: 5px;
+      margin-bottom: 10px;
+    }
+
+    .event-name {
+      font-weight: 600;
+      color: #253745;
+      font-size: 1rem;
     }
 
     .form-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 15px;
+      gap: 20px;
+      margin-bottom: 25px;
     }
 
     .form-group {
-      margin-bottom: 15px;
+      margin-bottom: 25px;
     }
 
     .form-group label {
@@ -222,112 +252,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
       font-weight: 600;
       color: #253745;
       margin-bottom: 8px;
+      font-size: 0.95rem;
     }
 
-    .form-group input {
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
       width: 100%;
-      padding: 12px;
+      padding: 12px 15px;
       border: 2px solid #e0e0e0;
       border-radius: 8px;
       font-size: 1rem;
+      transition: all 0.3s ease;
+      font-family: 'Segoe UI', sans-serif;
     }
 
-    .form-group input:focus {
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
       outline: none;
       border-color: #c00;
+      box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.1);
     }
 
-    .table-category {
-      margin-bottom: 20px;
-    }
-
-    .category-header {
-      background: #253745;
-      color: white;
-      padding: 12px 20px;
-      border-radius: 8px 8px 0 0;
-      font-weight: 700;
-    }
-
-    .table-options {
-      border: 2px solid #e0e0e0;
-      border-top: none;
-      border-radius: 0 0 8px 8px;
-      padding: 15px;
-      background: #f8f9fa;
-    }
-
-    .table-item {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      padding: 15px;
-      background: white;
-      border-radius: 6px;
-      margin-bottom: 10px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .table-item:hover {
-      background: #fff7f0;
-    }
-
-    .table-item input[type="radio"] {
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-      accent-color: #c00;
-    }
-
-    .table-info {
-      flex: 1;
-    }
-
-    .table-name {
-      font-weight: 700;
-      color: #253745;
-      margin-bottom: 5px;
-    }
-
-    .table-desc {
-      font-size: 0.85rem;
-      color: #666;
-      margin-bottom: 5px;
-    }
-
-    .table-capacity {
-      font-size: 0.9rem;
-      color: #c00;
-      font-weight: 600;
-    }
-
-    .table-price {
-      text-align: right;
-      font-weight: 700;
-      color: #c00;
-      font-size: 1.1rem;
-    }
-
-    .price-display {
-      background: #fff7f0;
-      padding: 15px;
-      border-radius: 8px;
-      border: 2px solid #c00;
-      text-align: center;
-      margin-top: 20px;
-      display: none;
-    }
-
-    .total-price {
-      color: #c00;
-      font-size: 1.3rem;
-      font-weight: 700;
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
     }
 
     .submit-btn {
       width: 100%;
-      padding: 15px;
+      padding: 16px;
       background-color: #c00;
       color: white;
       border: none;
@@ -335,12 +290,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
       font-size: 1.1rem;
       font-weight: bold;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 16px rgba(204, 0, 0, 0.3);
       text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
     .submit-btn:hover {
       background-color: #a00;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(204, 0, 0, 0.4);
+    }
+
+    .info-section {
+      margin-bottom: 30px;
+    }
+
+    .info-section h3 {
+      color: #253745;
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .info-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .info-list li {
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #555;
+    }
+
+    .info-list li:last-child {
+      border-bottom: none;
+    }
+
+    .info-list li::before {
+      content: '✓';
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      background-color: #c00;
+      color: white;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .contact-info {
+      background: linear-gradient(135deg, #253745 0%, #2f4f4f 100%);
+      padding: 25px;
+      border-radius: 12px;
+      color: white;
+    }
+
+    .contact-info h3 {
+      color: white;
+      margin-bottom: 15px;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .reservations-list {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
     }
 
     .reservations-table {
@@ -354,14 +386,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
       color: white;
     }
 
-    .reservations-table th,
-    .reservations-table td {
-      padding: 12px;
+    .reservations-table th {
+      padding: 15px;
       text-align: left;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .reservations-table td {
+      padding: 15px;
       border-bottom: 1px solid #f0f0f0;
+    }
+
+    .reservations-table tr:hover {
+      background-color: #f8f9fa;
     }
 
     .status-badge {
@@ -382,6 +422,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
       color: #155724;
     }
 
+    .status-cancelled {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
     .cancel-btn {
       padding: 8px 16px;
       background-color: #ff4757;
@@ -390,10 +435,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
       border-radius: 6px;
       font-weight: 600;
       cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.85rem;
     }
 
     .cancel-btn:hover {
       background-color: #ee2f3d;
+      transform: scale(1.05);
     }
 
     .no-reservations {
@@ -402,278 +450,302 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
       color: #999;
     }
 
+    .no-reservations-icon {
+      font-size: 4rem;
+      margin-bottom: 15px;
+      opacity: 0.3;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .reservation-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .event-types {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 768px) {
-      .event-types,
+      .page-header h1 {
+        font-size: 2rem;
+      }
+
       .form-row {
         grid-template-columns: 1fr;
+      }
+
+      .reservation-form-card,
+      .reservation-info-card,
+      .reservations-list {
+        padding: 25px;
+      }
+
+      .reservations-table {
+        font-size: 0.85rem;
+      }
+
+      .reservations-table th,
+      .reservations-table td {
+        padding: 10px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <a href="index.php" class="back-link">← Back to Home</a>
+  <div class="reservation-wrapper">
+    <a href="index.php" class="back-link">
+      ← Back to Home
+    </a>
 
-    <div class="header">
-      <h1>Reserve Your Table</h1>
-      <p>Reserve now! perfect dining experience at Kyla's Bistro</p>
+    <div class="page-header">
+      <h1>🍽️ Reserve Your Table</h1>
+      <p>Book your perfect dining experience at Kyla's Bistro</p>
     </div>
 
     <?php if ($message): ?>
       <div class="message <?= $messageType ?>">
-        <?= $message ?>
+        <?= htmlspecialchars($message) ?>
       </div>
     <?php endif; ?>
 
-    <div class="card">
-      <h2 class="card-title">Make a Reservation</h2>
-      <form method="POST" id="reservationForm">
-        
-        <!-- Event Type -->
-        <div class="form-section">
-          <label class="form-label">Select Dining Type</label>
-          <div class="event-types">
-            <div class="event-option">
-              <input type="radio" id="regular" name="event_type" value="Regular Dining" checked onchange="filterTables()">
-              <label for="regular" class="event-label">
-                <div class="event-icon">🍽️</div>
-                <div>Regular Dining</div>
-              </label>
-            </div>
-            <div class="event-option">
-              <input type="radio" id="birthday" name="event_type" value="Birthday Party" onchange="filterTables()">
-              <label for="birthday" class="event-label">
-                <div class="event-icon">🎂</div>
-                <div>Birthday Party</div>
-              </label>
-            </div>
-            <div class="event-option">
-              <input type="radio" id="meeting" name="event_type" value="Meeting" onchange="filterTables()">
-              <label for="meeting" class="event-label">
-                <div class="event-icon">💼</div>
-                <div>Meeting</div>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Date & Time -->
-        <div class="form-section">
-          <label class="form-label">Choose Date & Time</label>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Date</label>
-              <input type="date" name="reservation_date" required min="<?= date('Y-m-d') ?>" />
-            </div>
-            <div class="form-group">
-              <label>Time</label>
-              <input type="time" name="reservation_time" required />
-            </div>
-          </div>
-          <div class="form-group" id="durationField" style="display: none;">
-            <label>Duration (Hours)</label>
-            <input type="number" name="total_hours" id="total_hours" min="1" max="12" value="2" onchange="updatePrice()" />
-          </div>
-        </div>
-
-        <!-- Select Table -->
-        <div class="form-section">
-          <label class="form-label">Select Table/Room</label>
-          <div id="tablesList">
-            <?php
-            $tables_query = "SELECT table_id, table_number, capacity, table_type, description, price_per_hour 
-                             FROM tables 
-                             WHERE status = 'Available' 
-                             ORDER BY 
-                               CASE table_type 
-                                 WHEN 'Regular (Outside)' THEN 1
-                                 WHEN 'Regular (Inside)' THEN 2
-                                 WHEN 'Birthday Party Room' THEN 3
-                                 WHEN 'Meeting Room' THEN 4
-                               END, table_number";
-            
-            $tables_result = $conn->query($tables_query);
-            $grouped_tables = [];
-            while ($table = $tables_result->fetch_assoc()) {
-              $type = $table['table_type'];
-              $grouped_tables[$type][] = $table;
-            }
-            
-            $icons = [
-              'Regular (Outside)' => '🌳',
-              'Regular (Inside)' => '🏠',
-              'Birthday Party Room' => '🎉',
-              'Meeting Room' => '💼'
-            ];
-            
-            foreach ($grouped_tables as $type => $tables):
-            ?>
-              <div class="table-category" data-table-type="<?= htmlspecialchars($type) ?>">
-                <div class="category-header">
-                  <?= $icons[$type] ?? '📍' ?> <?= htmlspecialchars($type) ?>
-                </div>
-                <div class="table-options">
-                  <?php foreach ($tables as $table): ?>
-                    <label class="table-item">
-                      <input type="radio" name="table_id" value="<?= $table['table_id'] ?>" 
-                             required data-price="<?= $table['price_per_hour'] ?>" onchange="updatePrice()">
-                      <div class="table-info">
-                        <div class="table-name">Table <?= htmlspecialchars($table['table_number']) ?></div>
-                        <?php if ($table['description']): ?>
-                          <div class="table-desc"><?= htmlspecialchars($table['description']) ?></div>
-                        <?php endif; ?>
-                        <div class="table-capacity">Capacity: <?= $table['capacity'] ?> guests</div>
-                      </div>
-                      <div class="table-price">
-                        <?= $table['price_per_hour'] > 0 ? '₱' . number_format($table['price_per_hour'], 2) . '/hr' : 'Free' ?>
-                      </div>
-                    </label>
-                  <?php endforeach; ?>
-                </div>
+    <div class="reservation-grid">
+      <!-- Reservation Form -->
+      <div class="reservation-form-card">
+        <h2 class="card-title">Make a Reservation</h2>
+        <form method="POST">
+          <!-- Step 1: Event Type -->
+          <div class="form-step">
+            <span class="step-label">Step 1: Select Event Type</span>
+            <div class="event-types">
+              <div class="event-type-option">
+                <input type="radio" id="regular" name="event_type" value="Regular Dining" checked>
+                <label for="regular" class="event-type-label">
+                  <span class="event-icon">🍽️</span>
+                  <span class="event-name">Regular Dining</span>
+                </label>
               </div>
-            <?php endforeach; ?>
+              <div class="event-type-option">
+                <input type="radio" id="birthday" name="event_type" value="Intimate Birthday Party">
+                <label for="birthday" class="event-type-label">
+                  <span class="event-icon">🎂</span>
+                  <span class="event-name">Birthday Party</span>
+                </label>
+              </div>
+              <div class="event-type-option">
+                <input type="radio" id="wedding" name="event_type" value="Romantic Wedding">
+                <label for="wedding" class="event-type-label">
+                  <span class="event-icon">💒</span>
+                  <span class="event-name">Wedding</span>
+                </label>
+              </div>
+              <div class="event-type-option">
+                <input type="radio" id="corporate" name="event_type" value="Corporate Event">
+                <label for="corporate" class="event-type-label">
+                  <span class="event-icon">💼</span>
+                  <span class="event-name">Corporate Event</span>
+                </label>
+              </div>
+              <div class="event-type-option">
+                <input type="radio" id="meeting" name="event_type" value="Private Meeting">
+                <label for="meeting" class="event-type-label">
+                  <span class="event-icon">📋</span>
+                  <span class="event-name">Private Meeting</span>
+                </label>
+              </div>
+              <div class="event-type-option">
+                <input type="radio" id="anniversary" name="event_type" value="Anniversary Celebration">
+                <label for="anniversary" class="event-type-label">
+                  <span class="event-icon">💕</span>
+                  <span class="event-name">Anniversary</span>
+                </label>
+              </div>
+            </div>
           </div>
 
-          <div id="priceDisplay" class="price-display">
-            <strong>Estimated Total:</strong> 
-            <span id="totalPrice" class="total-price">₱0.00</span>
+          <!-- Step 2: Date & Time -->
+          <div class="form-step">
+            <span class="step-label">Step 2: Choose Date & Time</span>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="reservation_date">Date</label>
+                <input type="date" name="reservation_date" id="reservation_date" required min="<?= date('Y-m-d') ?>" />
+              </div>
+              <div class="form-group">
+                <label for="reservation_time">Time</label>
+                <input type="time" name="reservation_time" id="reservation_time" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Select Table -->
+          <div class="form-step">
+            <span class="step-label">Step 3: Select Table</span>
+            <div class="form-group">
+              <label for="table_id">Select Table</label>
+              <select name="table_id" id="table_id" required>
+                <option value="">-- Choose a Table --</option>
+                <?php
+                $tables = $conn->query("SELECT table_id, table_number, capacity FROM tables ORDER BY table_number");
+                while ($row = $tables->fetch_assoc()):
+                ?>
+                  <option value="<?= $row['table_id'] ?>">
+                    Table <?= $row['table_number'] ?> (<?= $row['capacity'] ?> seats)
+                  </option>
+                <?php endwhile; ?>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn">Confirm Reservation</button>
+        </form>
+      </div>
+
+      <!-- Info Sidebar -->
+      <div>
+        <div class="reservation-info-card">
+          <h2 class="card-title">What to Expect</h2>
+          
+          <div class="info-section">
+            <h3>📋 Reservation Process</h3>
+            <ul class="info-list">
+              <li>Select your event type and preferences</li>
+              <li>Choose your preferred date and time</li>
+              <li>Your reservation will be pending confirmation</li>
+              <li>Our staff will contact you within 24 hours</li>
+            </ul>
+          </div>
+
+          <div class="info-section">
+            <h3>⭐ Special Events</h3>
+            <ul class="info-list">
+              <li>Custom menu planning available</li>
+              <li>Event decoration options</li>
+              <li>Private dining areas</li>
+              <li>Audio/Visual equipment support</li>
+            </ul>
           </div>
         </div>
 
-        <button type="submit" class="submit-btn">Complete Reservation</button>
-      </form>
+        <div class="contact-info">
+          <h3>📞 Need Help?</h3>
+          <div class="contact-item">
+            <span>📧</span>
+            <span>kylasbistro.ph@gmail.com</span>
+          </div>
+          <div class="contact-item">
+            <span>📱</span>
+            <span>+63 917 888 8309</span>
+          </div>
+          <div class="contact-item">
+            <span>🕐</span>
+            <span>10:00 AM - 10:00 PM Daily</span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- My Reservations -->
-    <div class="card">
-      <h2 class="card-title">My Reservations</h2>
+    <!-- Reservations List -->
+    <div class="reservations-list">
+      <h2 class="card-title">🗓️ Your Reservations</h2>
       <?php
-      $reservations_query = $conn->prepare("SELECT r.reservation_id, r.reservation_date, r.reservation_time, r.event_type, r.status, r.total_hours, r.total_price, t.table_number, t.table_type, t.capacity 
-                                             FROM reservation r 
-                                             JOIN tables t ON r.table_id = t.table_id 
-                                             WHERE r.customer_id = ? 
-                                             ORDER BY r.reservation_date DESC, r.reservation_time DESC");
-      $reservations_query->bind_param("i", $customer_id);
-      $reservations_query->execute();
-      $reservations_result = $reservations_query->get_result();
+      // Check which columns exist in reservation table
+      $columns_query = $conn->query("SHOW COLUMNS FROM reservation");
+      $columns = [];
+      while ($col = $columns_query->fetch_assoc()) {
+        $columns[] = $col['Field'];
+      }
+      
+      $has_event_type = in_array('event_type', $columns);
+      $has_status = in_array('status', $columns);
+      
+      // Build query based on available columns
+      if ($has_event_type && $has_status) {
+        $query = "SELECT r.reservation_id, r.reservation_date, r.reservation_time, r.event_type, r.status, t.table_number, t.capacity 
+                  FROM reservation r 
+                  JOIN tables t ON r.table_id = t.table_id 
+                  WHERE r.customer_id = ? 
+                  ORDER BY r.reservation_date DESC, r.reservation_time DESC";
+      } else {
+        $query = "SELECT r.reservation_id, r.reservation_date, r.reservation_time, r.table_id, t.table_number, t.capacity 
+                  FROM reservation r 
+                  JOIN tables t ON r.table_id = t.table_id 
+                  WHERE r.customer_id = ? 
+                  ORDER BY r.reservation_date DESC, r.reservation_time DESC";
+      }
+      
+      $res_stmt = $conn->prepare($query);
+      if (!$res_stmt) {
+        die("Prepare failed: " . $conn->error);
+      }
+      $res_stmt->bind_param("i", $customer_id);
+      $res_stmt->execute();
+      $res_result = $res_stmt->get_result();
 
-      if ($reservations_result->num_rows > 0):
-      ?>
+      if ($res_result->num_rows === 0): ?>
+        <div class="no-reservations">
+          <div class="no-reservations-icon">📅</div>
+          <p>You have no reservations yet.</p>
+          <p>Book your first table above!</p>
+        </div>
+      <?php else: ?>
         <table class="reservations-table">
           <thead>
             <tr>
               <th>Date</th>
               <th>Time</th>
-              <th>Table/Room</th>
+              <?php if ($has_event_type): ?>
               <th>Event Type</th>
-              <th>Duration</th>
-              <th>Total Price</th>
+              <?php endif; ?>
+              <th>Table</th>
+              <?php if ($has_status): ?>
               <th>Status</th>
+              <?php endif; ?>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            <?php while ($res = $reservations_result->fetch_assoc()): ?>
+            <?php while ($res = $res_result->fetch_assoc()): 
+              $status = $has_status ? ($res['status'] ?? 'Pending') : 'Pending';
+              $status_class = 'status-' . strtolower($status);
+            ?>
               <tr>
                 <td><?= date('M d, Y', strtotime($res['reservation_date'])) ?></td>
                 <td><?= date('h:i A', strtotime($res['reservation_time'])) ?></td>
+                <?php if ($has_event_type): ?>
+                <td><?= htmlspecialchars($res['event_type'] ?? 'Regular Dining') ?></td>
+                <?php endif; ?>
+                <td>Table <?= htmlspecialchars($res['table_number']) ?> (<?= $res['capacity'] ?> seats)</td>
+                <?php if ($has_status): ?>
                 <td>
-                  <strong><?= htmlspecialchars($res['table_number']) ?></strong><br>
-                  <small><?= htmlspecialchars($res['table_type']) ?></small>
-                </td>
-                <td><?= htmlspecialchars($res['event_type']) ?></td>
-                <td><?= $res['total_hours'] ?> hr<?= $res['total_hours'] > 1 ? 's' : '' ?></td>
-                <td>
-                  <?= $res['total_price'] > 0 ? '₱' . number_format($res['total_price'], 2) : 'Free' ?>
-                </td>
-                <td>
-                  <span class="status-badge status-<?= strtolower($res['status']) ?>">
-                    <?= htmlspecialchars($res['status']) ?>
+                  <span class="status-badge <?= $status_class ?>">
+                    <?= htmlspecialchars($status) ?>
                   </span>
                 </td>
+                <?php endif; ?>
                 <td>
-                  <?php if ($res['status'] === 'Pending'): ?>
-                    <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure?');">
-                      <input type="hidden" name="cancel_reservation_id" value="<?= $res['reservation_id'] ?>">
-                      <button type="submit" class="cancel-btn">Cancel</button>
-                    </form>
-                  <?php else: ?>
-                    -
-                  <?php endif; ?>
+                  <form method="POST" style="margin: 0;">
+                    <input type="hidden" name="cancel_reservation_id" value="<?= $res['reservation_id'] ?>" />
+                    <button type="submit" class="cancel-btn" onclick="return confirm('Are you sure you want to cancel this reservation?')">Cancel</button>
+                  </form>
                 </td>
               </tr>
             <?php endwhile; ?>
           </tbody>
         </table>
-      <?php else: ?>
-        <div class="no-reservations">
-          <p>📅 You don't have any reservations yet.</p>
-        </div>
       <?php endif; ?>
     </div>
-
-    <div class="card" style="background: linear-gradient(135deg, #253745 0%, #2f4f4f 100%); color: white;">
-      <h2 class="card-title" style="color: white; border-bottom-color: white;">📞 Need Help?</h2>
-      <div style="display: grid; gap: 15px;">
-        <div>
-          <strong>Phone:</strong> <?= htmlspecialchars($phone ?? '(02) 8123-4567') ?>
-        </div>
-        <div>
-          <strong>Email:</strong> <?= htmlspecialchars($email ?? 'reservations@kylasbistro.com') ?>
-        </div>
-        <div>
-          <strong>Hours:</strong> Daily 10:00 AM - 10:00 PM
-        </div>
-      </div>
-    </div>
   </div>
-
-  <script>
-    function filterTables() {
-      const selectedEvent = document.querySelector('input[name="event_type"]:checked').value;
-      const categories = document.querySelectorAll('.table-category');
-      
-      categories.forEach(category => {
-        const tableType = category.getAttribute('data-table-type');
-        
-        if (selectedEvent === 'Regular Dining') {
-          category.style.display = tableType.includes('Regular') ? 'block' : 'none';
-        } else if (selectedEvent === 'Birthday Party') {
-          category.style.display = tableType === 'Birthday Party Room' ? 'block' : 'none';
-        } else if (selectedEvent === 'Meeting') {
-          category.style.display = tableType === 'Meeting Room' ? 'block' : 'none';
-        }
-      });
-
-      document.querySelectorAll('input[name="table_id"]').forEach(radio => radio.checked = false);
-      updatePrice();
-    }
-
-    function updatePrice() {
-      const selectedTable = document.querySelector('input[name="table_id"]:checked');
-      const totalHours = parseInt(document.getElementById('total_hours').value) || 2;
-      const priceDisplay = document.getElementById('priceDisplay');
-      const totalPriceElement = document.getElementById('totalPrice');
-      
-      if (selectedTable) {
-        const pricePerHour = parseFloat(selectedTable.getAttribute('data-price')) || 0;
-        const totalPrice = pricePerHour * totalHours;
-        
-        if (totalPrice > 0) {
-          totalPriceElement.textContent = '₱' + totalPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-          priceDisplay.style.display = 'block';
-        } else {
-          priceDisplay.style.display = 'none';
-        }
-      } else {
-        priceDisplay.style.display = 'none';
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      filterTables();
-    });
-  </script>
 </body>
 </html>
-<?php $conn->close(); ?>
