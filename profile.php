@@ -131,36 +131,21 @@ $orders_stmt->close();
   <link rel="stylesheet" href="style.css" />
   <style>
     .profile-container {
-      max-width: 1000px;
+      max-width: 900px;
       margin: 40px auto;
-      padding: 0 20px;
+      padding: 20px;
     }
     
-    .profile-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 40px;
-      border-radius: 15px;
-      text-align: center;
+    .page-title {
+      font-size: 28px;
       margin-bottom: 30px;
-      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
-    }
-    
-    .profile-header h1 {
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-    
-    .profile-header p {
-      font-size: 16px;
-      opacity: 0.9;
+      color: #333;
     }
     
     .alert {
-      padding: 15px 20px;
-      border-radius: 10px;
+      padding: 12px 16px;
+      border-radius: 4px;
       margin-bottom: 20px;
-      font-weight: 500;
     }
     
     .alert-success {
@@ -177,249 +162,114 @@ $orders_stmt->close();
     
     .profile-section {
       background: white;
-      border-radius: 15px;
-      padding: 30px;
-      margin-bottom: 30px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 25px;
+      margin-bottom: 25px;
     }
     
     .section-title {
-      font-size: 22px;
+      font-size: 18px;
+      font-weight: 600;
       color: #333;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       padding-bottom: 10px;
-      border-bottom: 2px solid #667eea;
+      border-bottom: 1px solid #eee;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      
     }
     
     .edit-btn {
-      background: #667eea;
+      background: #007bff;
       color: white;
-      padding: 8px 16px;
-      border-radius: 8px;
+      padding: 6px 12px;
+      border-radius: 3px;
       text-decoration: none;
       font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
       border: none;
-      transition: all 0.3s ease;
+      cursor: pointer;
     }
     
     .edit-btn:hover {
-      background: #5568d3;
-      transform: translateY(-2px);
+      background: #0056b3;
     }
     
-    .form-grid {
+    .info-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
+      grid-template-columns: 150px 1fr;
+      padding: 10px 0;
+      border-bottom: 1px solid #f5f5f5;
     }
     
-    .form-group {
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .form-group label {
-      font-size: 12px;
-      color: #667eea;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-    
-    .form-group input,
-    .form-group textarea {
-      padding: 12px 15px;
-      border: 2px solid #e8ebf7;
-      border-radius: 8px;
-      font-size: 15px;
-      transition: all 0.3s ease;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    
-    .form-group input:focus,
-    .form-group textarea:focus {
-      outline: none;
-      border-color: #667eea;
-      background: #f8f9ff;
-    }
-    
-    .form-group textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-    
-    .form-actions {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-      margin-top: 20px;
-    }
-    
-    .btn-save {
-      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-      color: white;
-      padding: 12px 24px;
-      border-radius: 8px;
-      border: none;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    
-    .btn-save:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
-    }
-    
-    .btn-cancel {
-      background: #e0e0e0;
-      color: #333;
-      padding: 12px 24px;
-      border-radius: 8px;
-      border: none;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    
-    .btn-cancel:hover {
-      background: #d0d0d0;
-    }
-    
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
-    }
-    
-    .info-item {
-      background: #f8f9ff;
-      padding: 15px 20px;
-      border-radius: 10px;
-      border-left: 4px solid #667eea;
+    .info-row:last-child {
+      border-bottom: none;
     }
     
     .info-label {
-      font-size: 12px;
-      color: #667eea;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 5px;
       font-weight: 600;
+      color: #666;
     }
     
     .info-value {
-      font-size: 16px;
       color: #333;
-      font-weight: 500;
     }
     
     .orders-table {
       width: 100%;
-      border-collapse: separate;
-      border-spacing: 0 10px;
-      margin-top: 20px;
+      border-collapse: collapse;
+      margin-top: 15px;
     }
     
     .orders-table th {
       text-align: left;
-      padding: 12px 15px;
-      color: #667eea;
-      text-transform: uppercase;
-      font-size: 13px;
-      letter-spacing: 0.5px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-bottom: 2px solid #dee2e6;
       font-weight: 600;
+      color: #333;
     }
     
     .orders-table td {
-      padding: 15px;
-      background: #f8f9ff;
-      border-top: 1px solid #e8ebf7;
-      border-bottom: 1px solid #e8ebf7;
+      padding: 12px 10px;
+      border-bottom: 1px solid #dee2e6;
     }
     
-    .orders-table td:first-child {
-      border-left: 1px solid #e8ebf7;
-      border-radius: 10px 0 0 10px;
-    }
-    
-    .orders-table td:last-child {
-      border-right: 1px solid #e8ebf7;
-      border-radius: 0 10px 10px 0;
-    }
-    
-    .orders-table tr:hover td {
-      background: #eef1ff;
-      transform: scale(1.01);
-      transition: all 0.2s ease;
+    .orders-table tr:hover {
+      background: #f8f9fa;
     }
     
     .view-btn {
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      background: #28a745;
       color: white;
-      padding: 8px 16px;
-      border-radius: 8px;
+      padding: 5px 12px;
+      border-radius: 3px;
       text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      display: inline-block;
+      font-size: 13px;
     }
     
     .view-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+      background: #218838;
     }
     
     .back-btn {
-      background: #667eea;
+      background: #6c757d;
       color: white;
-      padding: 12px 24px;
-      border-radius: 8px;
+      padding: 8px 16px;
+      border-radius: 3px;
       text-decoration: none;
-      font-weight: 500;
       display: inline-block;
       margin-bottom: 20px;
-      transition: all 0.3s ease;
     }
     
     .back-btn:hover {
-      background: #5568d3;
-      transform: translateY(-2px);
+      background: #5a6268;
     }
     
     .empty-state {
       text-align: center;
-      padding: 60px 20px;
+      padding: 40px 20px;
       color: #999;
-    }
-    
-    .empty-state svg {
-      width: 80px;
-      height: 80px;
-      margin-bottom: 20px;
-      opacity: 0.3;
-    }
-    
-    .edit-mode {
-      display: none;
-    }
-    
-    .view-mode {
-      display: block;
-    }
-    
-    .required {
-      color: red;
     }
   </style>
 </head>
@@ -431,7 +281,7 @@ $orders_stmt->close();
         <?php $cart_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0; ?>
         <span class="welcome-text">👋 Welcome, <?= htmlspecialchars($_SESSION['username']) ?></span>
         <a href="profile.php" class="btn profile-btn" title="View Profile">👤 Profile</a>
-        <a href="cart.php" class="cart-icon" title="View Cart">🛒<?= $cart_count > 0 ? "($cart_count)" : "" ?></a>
+        <a href="cart.php" class="cart-icon" title="View Cart">🛒<?= $cart_count > 0 ? " ($cart_count)" : "" ?></a>
         <a href="customer_logout.php" class="btn logout-btn">LOG OUT</a>
       </div>
     </div>
@@ -441,7 +291,6 @@ $orders_stmt->close();
     <ul class="links">
       <li><a href="index.php">HOME</a></li>
       <li><a href="menu.php">MENU</a></li>
-      <li><a href="#">FEEDBACK</a></li>
       <li><a href="aboutus.php">ABOUT US</a></li>
     </ul>
   </nav>
@@ -450,57 +299,50 @@ $orders_stmt->close();
     <a href="menu.php" class="back-btn">← Back to Menu</a>
     
     <?php if ($success_message): ?>
-      <div class="alert alert-success">✓ <?= htmlspecialchars($success_message) ?></div>
+      <div class="alert alert-success"><?= htmlspecialchars($success_message) ?></div>
     <?php endif; ?>
     
     <?php if ($error_message): ?>
-      <div class="alert alert-error">⚠ <?= htmlspecialchars($error_message) ?></div>
+      <div class="alert alert-error"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
     
-    <div class="profile-header">
-      <h1>👤 My Profile</h1>
-      <p>View and manage your personal information</p>
-    </div>
+    <h1 class="page-title">My Profile</h1>
 
     <div class="profile-section">
       <div class="section-title">
         <span>Personal Information</span>
-        <a href="profile_edit.php" class="edit-btn">✏️ Edit Profile</a>
+        <a href="profile_edit.php" class="edit-btn">Edit Profile</a>
       </div>
       
-      <!-- View Mode -->
-      <div id="viewMode" class="view-mode">
-        <div class="info-grid">
-          <div class="info-item">
-            <div class="info-label">First Name</div>
-            <div class="info-value"><?= htmlspecialchars($customer['first_name']) ?></div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">Middle Name</div>
-            <div class="info-value"><?= htmlspecialchars($customer['middle_name']) ?: '-' ?></div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">Last Name</div>
-            <div class="info-value"><?= htmlspecialchars($customer['last_name']) ?></div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">Username</div>
-            <div class="info-value"><?= htmlspecialchars($customer['username']) ?></div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">Email Address</div>
-            <div class="info-value"><?= htmlspecialchars($customer['email']) ?></div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">Phone Number</div>
-            <div class="info-value"><?= htmlspecialchars($customer['phone_number']) ?></div>
-          </div>
-          <div class="info-item" style="grid-column: 1 / -1;">
-            <div class="info-label">Address</div>
-            <div class="info-value"><?= htmlspecialchars($customer['address']) ?></div>
-          </div>
-        </div>
+      <div class="info-row">
+        <div class="info-label">First Name:</div>
+        <div class="info-value"><?= htmlspecialchars($customer['first_name']) ?></div>
       </div>
+      <div class="info-row">
+        <div class="info-label">Middle Name:</div>
+        <div class="info-value"><?= htmlspecialchars($customer['middle_name']) ?: '-' ?></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Last Name:</div>
+        <div class="info-value"><?= htmlspecialchars($customer['last_name']) ?></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Username:</div>
+        <div class="info-value"><?= htmlspecialchars($customer['username']) ?></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Email:</div>
+        <div class="info-value"><?= htmlspecialchars($customer['email']) ?></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Phone Number:</div>
+        <div class="info-value"><?= htmlspecialchars($customer['phone_number']) ?></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Address:</div>
+        <div class="info-value"><?= htmlspecialchars($customer['address']) ?></div>
+      </div>
+    </div>
 
     <div class="profile-section">
       <h2 class="section-title">Order History</h2>
@@ -519,10 +361,10 @@ $orders_stmt->close();
           <tbody>
             <?php while ($order = $orders_result->fetch_assoc()): ?>
               <tr>
-                <td><strong>#<?= htmlspecialchars($order['order_id']) ?></strong></td>
+                <td>#<?= htmlspecialchars($order['order_id']) ?></td>
                 <td><?= date('F d, Y', strtotime($order['order_date'])) ?></td>
                 <td><?= date('h:i A', strtotime($order['order_time'])) ?></td>
-                <td><strong>₱<?= number_format($order['total_amount'], 2) ?></strong></td>
+                <td>₱<?= number_format($order['total_amount'], 2) ?></td>
                 <td>
                   <a href="view_order.php?id=<?= $order['order_id'] ?>" class="view-btn">View Details</a>
                 </td>
@@ -532,11 +374,8 @@ $orders_stmt->close();
         </table>
       <?php else: ?>
         <div class="empty-state">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-          </svg>
           <p>You haven't placed any orders yet</p>
-          <a href="menu.php" class="view-btn" style="margin-top: 20px;">Start Shopping</a>
+          <a href="menu.php" class="view-btn">Start Shopping</a>
         </div>
       <?php endif; ?>
     </div>
