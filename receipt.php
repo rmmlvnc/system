@@ -24,16 +24,13 @@ if ($order['order_id'] != $order_id) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Order Receipt | Kyla's Bistro</title>
+  <link rel="stylesheet" href="style.css" />
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #fff7f0 0%, #ffe0e0 100%);
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f6f2;
+      color: #2c1810;
+      margin: 0;
       padding: 20px;
       min-height: 100vh;
     }
@@ -45,161 +42,147 @@ if ($order['order_id'] != $order_id) {
 
     .success-header {
       text-align: center;
-      margin-bottom: 30px;
-      animation: fadeIn 0.6s ease;
+      margin-bottom: 20px;
+      background: white;
+      padding: 25px;
+      border: 1px solid #ddd;
     }
 
     .success-icon {
-      width: 80px;
-      height: 80px;
-      background: linear-gradient(135deg, #28a745, #20c997);
+      width: 60px;
+      height: 60px;
+      background: #28a745;
       border-radius: 50%;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 3rem;
+      font-size: 2rem;
       color: white;
-      margin-bottom: 15px;
-      animation: scaleIn 0.5s ease;
+      margin-bottom: 10px;
     }
 
     .success-title {
-      font-size: 2rem;
-      color: #253745;
-      margin-bottom: 10px;
+      font-size: 24px;
+      color: #2c1810;
+      margin-bottom: 5px;
+      font-weight: 600;
     }
 
     .success-subtitle {
       color: #666;
-      font-size: 1.1rem;
+      font-size: 14px;
     }
 
     .receipt-card {
       background: white;
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      border: 1px solid #ddd;
       overflow: hidden;
-      animation: slideUp 0.6s ease;
     }
 
     .receipt-header {
-      background: linear-gradient(135deg, #c00 0%, #a00 100%);
+      background: #2c1810;
       color: white;
-      padding: 30px;
+      padding: 25px;
       text-align: center;
     }
 
     .receipt-header h1 {
-      font-size: 2rem;
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .receipt-header p {
       margin-bottom: 10px;
+      font-size: 14px;
     }
 
     .receipt-number {
-      font-size: 1.3rem;
-      font-weight: 700;
-      background: rgba(255,255,255,0.2);
+      font-size: 16px;
+      font-weight: 600;
+      background: #d4a574;
+      color: #2c1810;
       display: inline-block;
-      padding: 10px 25px;
-      border-radius: 25px;
-      margin-top: 10px;
-      letter-spacing: 1px;
+      padding: 8px 20px;
+      margin-top: 8px;
     }
 
     .order-id-badge {
       display: inline-block;
-      background: rgba(255,255,255,0.3);
-      padding: 8px 20px;
-      border-radius: 20px;
-      margin-top: 8px;
-      font-size: 1rem;
+      background: rgba(212, 165, 116, 0.3);
+      padding: 6px 15px;
+      margin-top: 5px;
+      font-size: 14px;
     }
 
     .receipt-body {
-      padding: 30px;
+      padding: 25px;
     }
 
     .info-section {
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
 
     .section-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #253745;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #f0f0f0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #2c1810;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #ddd;
     }
 
     .info-grid {
       display: grid;
-      gap: 12px;
+      gap: 8px;
     }
 
     .info-row {
       display: flex;
       justify-content: space-between;
       padding: 10px;
-      background: #f8f9fa;
-      border-radius: 6px;
-      font-size: 0.95rem;
+      background: #f9f9f9;
+      font-size: 14px;
     }
 
     .info-label {
       font-weight: 600;
-      color: #555;
+      color: #2c1810;
     }
 
     .info-value {
-      color: #253745;
+      color: #2c1810;
       text-align: right;
-      font-weight: 500;
     }
 
     .status-badge {
       display: inline-block;
-      padding: 5px 15px;
-      border-radius: 20px;
-      font-size: 0.85rem;
+      padding: 4px 12px;
+      font-size: 12px;
       font-weight: 600;
       background: #ffc107;
       color: #856404;
     }
 
     .address-box {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 8px;
-      color: #555;
-      line-height: 1.6;
-      border-left: 4px solid #c00;
-    }
-
-    .notes-box {
-      background: #e7f3ff;
+      background: #f9f9f9;
       padding: 12px;
-      border-radius: 6px;
-      color: #004085;
-      font-style: italic;
-      margin-top: 10px;
+      color: #2c1810;
+      line-height: 1.6;
+      border-left: 3px solid #2c1810;
     }
 
     .order-items-list {
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
 
     .item-card {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      border-left: 4px solid #c00;
+      padding: 12px;
+      background: #f9f9f9;
+      margin-bottom: 8px;
+      border-left: 3px solid #2c1810;
     }
 
     .item-details {
@@ -207,170 +190,98 @@ if ($order['order_id'] != $order_id) {
     }
 
     .item-name {
-      font-weight: 700;
-      color: #253745;
-      margin-bottom: 5px;
-      font-size: 1rem;
+      font-weight: 600;
+      color: #2c1810;
+      margin-bottom: 4px;
+      font-size: 15px;
     }
 
     .item-qty {
-      font-size: 0.9rem;
+      font-size: 13px;
       color: #666;
     }
 
     .item-price {
-      font-weight: 700;
-      color: #c00;
-      font-size: 1.2rem;
+      font-weight: 600;
+      color: #2c1810;
+      font-size: 16px;
     }
 
     .total-section {
-      background: #f8f9fa;
-      padding: 20px;
-      border-radius: 12px;
-      margin-top: 20px;
+      background: #f9f9f9;
+      padding: 15px;
+      margin-top: 15px;
+      border: 2px solid #ddd;
     }
 
     .total-row {
       display: flex;
       justify-content: space-between;
-      padding: 10px 0;
-      font-size: 1rem;
+      padding: 8px 0;
+      font-size: 15px;
     }
 
     .total-row.grand {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #c00;
-      padding-top: 15px;
-      margin-top: 10px;
-      border-top: 2px solid #dee2e6;
+      font-size: 20px;
+      font-weight: 600;
+      color: #2c1810;
+      padding-top: 12px;
+      margin-top: 8px;
+      border-top: 2px solid #2c1810;
     }
 
     .alert-box {
       background: #fff3cd;
       border: 2px solid #ffc107;
-      border-radius: 8px;
-      padding: 15px;
-      margin-top: 20px;
-      display: flex;
-      gap: 12px;
+      padding: 12px;
+      margin-top: 15px;
     }
 
-    .alert-icon {
-      font-size: 1.5rem;
-    }
-
-    .alert-content {
-      flex: 1;
+    .alert-box strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 15px;
       color: #856404;
     }
 
-    .alert-content strong {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 1rem;
-    }
-
-    .alert-content p {
-      font-size: 0.9rem;
+    .alert-box p {
+      font-size: 13px;
       line-height: 1.5;
-    }
-
-    .action-buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-top: 30px;
-    }
-
-    .btn {
-      padding: 14px 24px;
-      border: none;
-      border-radius: 25px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-    }
-
-    .btn-print {
-      background: #6c757d;
-      color: white;
-    }
-
-    .btn-print:hover {
-      background: #5a6268;
-      transform: translateY(-2px);
+      color: #856404;
     }
 
     .btn-home {
-      background: linear-gradient(135deg, #c00 0%, #a00 100%);
+      display: block;
+      width: 100%;
+      padding: 12px 24px;
+      border: none;
+      background: #2c1810;
       color: white;
-      box-shadow: 0 4px 12px rgba(204, 0, 0, 0.3);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      text-align: center;
+      text-decoration: none;
+      margin-top: 20px;
     }
 
     .btn-home:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(204, 0, 0, 0.4);
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes scaleIn {
-      from { transform: scale(0); }
-      to { transform: scale(1); }
-    }
-
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @media print {
-      body {
-        background: white;
-        padding: 0;
-      }
-
-      .success-header,
-      .action-buttons,
-      .alert-box {
-        display: none;
-      }
-
-      .receipt-card {
-        box-shadow: none;
-      }
+      background: #3d2417;
     }
 
     @media (max-width: 576px) {
-      .action-buttons {
-        grid-template-columns: 1fr;
-      }
 
       .success-title {
-        font-size: 1.5rem;
+        font-size: 24px;
       }
 
       .receipt-header h1 {
-        font-size: 1.5rem;
+        font-size: 26px;
       }
 
       .receipt-number {
-        font-size: 1rem;
+        font-size: 16px;
       }
 
       .receipt-body {
@@ -395,7 +306,7 @@ if ($order['order_id'] != $order_id) {
 
     <div class="receipt-card">
       <div class="receipt-header">
-        <h1>🍽️ Kyla's Bistro</h1>
+        <h1>Kyla's Bistro</h1>
         <p>Official Order Receipt</p>
         <div class="order-id-badge">Order ID: #<?= htmlspecialchars($order['order_id']) ?></div>
         <div class="receipt-number"><?= htmlspecialchars($order['receipt_number']) ?></div>
@@ -404,7 +315,7 @@ if ($order['order_id'] != $order_id) {
       <div class="receipt-body">
         <!-- Customer Information -->
         <div class="info-section">
-          <h2 class="section-title">👤 Customer Information</h2>
+          <h2 class="section-title">Customer Information</h2>
           <div class="info-grid">
             <div class="info-row">
               <span class="info-label">Name:</span>
@@ -423,7 +334,7 @@ if ($order['order_id'] != $order_id) {
 
         <!-- Order Details -->
         <div class="info-section">
-          <h2 class="section-title">📋 Order Details</h2>
+          <h2 class="section-title">Order Details</h2>
           <div class="info-grid">
             <div class="info-row">
               <span class="info-label">Order Date:</span>
@@ -446,15 +357,15 @@ if ($order['order_id'] != $order_id) {
 
         <!-- Delivery Address -->
         <div class="info-section">
-          <h2 class="section-title">📍 Delivery Address</h2>
+          <h2 class="section-title">Delivery Address</h2>
           <div class="address-box">
-            <?= nl2br(htmlspecialchars($order['customer_address'])) ?>
+            <?= nl2br(htmlspecialchars($order['delivery_address'])) ?>
           </div>
         </div>
 
         <!-- Order Items -->
         <div class="info-section">
-          <h2 class="section-title">🛒 Order Items</h2>
+          <h2 class="section-title">Order Items</h2>
           <div class="order-items-list">
             <?php foreach ($order['items'] as $item): ?>
               <div class="item-card">
@@ -489,28 +400,20 @@ if ($order['order_id'] != $order_id) {
         </div>
 
         <div class="alert-box">
-          <div class="alert-icon">⚠️</div>
-          <div class="alert-content">
-            <strong>Important Notice</strong>
-            <p>
-              Your order is currently pending. We will contact you shortly to confirm your order.
-              <?php if ($order['payment_method'] === 'Cash on Delivery'): ?>
-                Please prepare the exact amount (₱<?= number_format($order['total'], 2) ?>) for faster processing.
-              <?php endif; ?>
-              Keep this receipt number for reference: <strong><?= htmlspecialchars($order['receipt_number']) ?></strong>
-            </p>
-          </div>
+          <strong>Important Notice</strong>
+          <p>
+            Your order is currently pending. We will contact you shortly to confirm your order.
+            <?php if ($order['payment_method'] === 'Cash on Delivery'): ?>
+              Please prepare the exact amount (₱<?= number_format($order['total'], 2) ?>) for faster processing.
+            <?php endif; ?>
+            Keep this receipt number for reference: <strong><?= htmlspecialchars($order['receipt_number']) ?></strong>
+          </p>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="action-buttons">
-          <button onclick="window.print()" class="btn btn-print">
-            🖨️ Print Receipt
-          </button>
-          <a href="index.php" class="btn btn-home">
-            🏠 Back to Home
-          </a>
-        </div>
+        <!-- Action Button -->
+        <a href="index2.php" class="btn-home">
+          Back to Home
+        </a>
       </div>
     </div>
   </div>
