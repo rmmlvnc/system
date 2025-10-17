@@ -95,14 +95,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } catch (Exception $e) {
       $conn->rollback();
-      $error_message = "⚠️ Failed to place order: " . $e->getMessage();
+      $error_message = "Failed to place order: " . $e->getMessage();
     }
   } else {
-    $error_message = "⚠️ Please select a payment method.";
+    $error_message = "Please select a payment method.";
   }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -114,128 +113,140 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #fff7f0 0%, #ffe0e0 100%);
+      background-color: #f9f6f2;
+      color: #2c1810;
       margin: 0;
       padding: 0;
       min-height: 100vh;
     }
 
     .checkout-wrapper {
-      max-width: 1000px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 20px 15px;
+      padding: 40px 20px;
     }
 
-    .checkout-header {
-      text-align: center;
+    .header-section {
+      margin-bottom: 30px;
+    }
+
+    .back-link {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #2c1810;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
       margin-bottom: 20px;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
     }
 
-    .checkout-title {
-      font-size: 1.8rem;
-      color: #253745;
-      margin: 0 0 5px 0;
+    .back-link:hover {
+      background: #3d2417;
     }
 
-    .checkout-subtitle {
+    .page-title {
+      font-size: 32px;
+      color: #8b4513;
+      margin: 0 0 8px 0;
+      font-weight: 700;
+    }
+
+    .page-subtitle {
       color: #666;
-      font-size: 0.95rem;
+      font-size: 16px;
       margin: 0;
     }
 
     .checkout-content {
       display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 20px;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 30px;
     }
 
     .checkout-form,
     .order-summary {
       background: white;
       border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 30px;
+      box-shadow: 0 6px 16px rgba(44, 24, 16, 0.1);
     }
 
-    .section-title {
-      font-size: 1.2rem;
-      color: #253745;
-      margin: 0 0 15px 0;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #c00;
+    .section-heading {
+      font-size: 22px;
+      color: #2c1810;
+      margin: 0 0 20px 0;
+      padding-bottom: 12px;
+      border-bottom: 3px solid #d4a574;
+      font-weight: 700;
     }
 
     .form-section {
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
 
     .section-label {
-      font-size: 0.95rem;
+      font-size: 15px;
       font-weight: 600;
-      color: #253745;
-      margin-bottom: 10px;
+      color: #2c1810;
+      margin-bottom: 12px;
       display: block;
     }
 
-    .info-display {
-      background: #f8f9fa;
-      padding: 12px;
-      border-radius: 6px;
-      font-size: 0.9rem;
+    .info-box {
+      background: #f5e6d3;
+      padding: 18px;
+      border-radius: 8px;
+      font-size: 15px;
+      border-left: 4px solid #8b4513;
     }
 
     .info-row {
       display: flex;
       justify-content: space-between;
-      padding: 5px 0;
-      color: #555;
+      padding: 6px 0;
+      color: #2c1810;
     }
 
-    .info-label {
+    .info-row strong {
+      color: #2c1810;
       font-weight: 600;
     }
 
     .form-group {
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
 
     .form-group label {
       display: block;
       font-weight: 600;
-      color: #253745;
-      margin-bottom: 6px;
-      font-size: 0.95rem;
+      color: #2c1810;
+      margin-bottom: 8px;
+      font-size: 15px;
     }
 
-    .form-group input,
     .form-group textarea {
       width: 100%;
-      padding: 10px 12px;
-      border: 2px solid #e0e0e0;
-      border-radius: 6px;
-      font-size: 0.95rem;
+      padding: 12px 14px;
+      border: 1px solid #d4a574;
+      border-radius: 8px;
+      font-size: 15px;
       font-family: 'Segoe UI', sans-serif;
       box-sizing: border-box;
+      background-color: #f9f9f9;
+      transition: border-color 0.3s ease;
     }
 
-    .form-group input:focus,
     .form-group textarea:focus {
       outline: none;
-      border-color: #c00;
+      border-color: #8b4513;
+      background-color: white;
     }
 
-    .form-group textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
-
-    .payment-methods {
+    .payment-options {
       display: grid;
-      gap: 10px;
-    }
-
-    .payment-option {
-      position: relative;
+      gap: 12px;
     }
 
     .payment-option input[type="radio"] {
@@ -245,125 +256,116 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .payment-label {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 15px;
-      background: #f8f9fa;
-      border: 2px solid #e0e0e0;
+      gap: 15px;
+      padding: 16px 18px;
+      background: #f9f6f2;
+      border: 2px solid #d4a574;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.3s ease;
     }
 
     .payment-option input[type="radio"]:checked + .payment-label {
-      background: #fff7f0;
-      border-color: #c00;
-      box-shadow: 0 2px 8px rgba(204, 0, 0, 0.15);
+      background: #f5e6d3;
+      border-color: #8b4513;
+      box-shadow: 0 4px 12px rgba(139, 69, 19, 0.15);
     }
 
     .payment-label:hover {
-      border-color: #c00;
+      border-color: #8b4513;
     }
 
-    .payment-icon {
-      font-size: 1.5rem;
-      width: 40px;
-      text-align: center;
-    }
-
-    .payment-details {
+    .payment-text {
       flex: 1;
     }
 
     .payment-name {
       font-weight: 700;
-      font-size: 0.95rem;
-      color: #253745;
-      margin-bottom: 2px;
+      font-size: 16px;
+      color: #2c1810;
+      margin-bottom: 3px;
     }
 
     .payment-desc {
-      font-size: 0.8rem;
+      font-size: 13px;
       color: #666;
     }
 
     .order-items {
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
 
     .order-item {
       display: flex;
       justify-content: space-between;
-      padding: 10px 0;
+      padding: 12px 0;
       border-bottom: 1px solid #f0f0f0;
-      font-size: 0.9rem;
+      font-size: 15px;
     }
 
     .order-item:last-child {
       border-bottom: none;
     }
 
-    .item-info {
+    .item-details {
       flex: 1;
     }
 
     .item-name {
       font-weight: 600;
-      color: #253745;
-      margin-bottom: 3px;
+      color: #2c1810;
+      margin-bottom: 4px;
     }
 
     .item-qty {
-      font-size: 0.85rem;
+      font-size: 14px;
       color: #666;
     }
 
     .item-price {
       font-weight: 700;
-      color: #c00;
+      color: #8b4513;
     }
 
     .summary-totals {
-      margin-top: 15px;
-      padding-top: 15px;
-      border-top: 2px solid #f0f0f0;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 2px solid #d4a574;
     }
 
     .summary-row {
       display: flex;
       justify-content: space-between;
-      padding: 8px 0;
-      font-size: 0.95rem;
+      padding: 10px 0;
+      font-size: 15px;
     }
 
     .summary-row.total {
-      font-size: 1.2rem;
+      font-size: 22px;
       font-weight: 700;
-      color: #253745;
-      padding-top: 12px;
-      border-top: 2px solid #e0e0e0;
-      margin-top: 8px;
+      color: #2c1810;
+      padding-top: 15px;
+      margin-top: 10px;
+      border-top: 3px solid #8b4513;
     }
 
     .place-order-btn {
       width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, #c00 0%, #a00 100%);
+      padding: 16px;
+      background-color: #8b4513;
       color: white;
       border: none;
-      border-radius: 20px;
-      font-size: 1rem;
+      border-radius: 8px;
+      font-size: 18px;
       font-weight: 700;
       cursor: pointer;
-      margin-top: 15px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(204, 0, 0, 0.3);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      margin-top: 20px;
+      box-shadow: 0 6px 16px rgba(139, 69, 19, 0.3);
+      transition: background-color 0.3s ease;
     }
 
     .place-order-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(204, 0, 0, 0.4);
+      background-color: #6d3610;
     }
 
     .place-order-btn:disabled {
@@ -371,34 +373,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       cursor: not-allowed;
     }
 
-    .back-to-cart {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 16px;
-      background: #e0e0e0;
-      color: #555;
-      text-decoration: none;
-      border-radius: 20px;
-      font-weight: 600;
-      margin-bottom: 15px;
-      transition: all 0.3s ease;
-      font-size: 0.9rem;
-    }
-
-    .back-to-cart:hover {
-      background: #d0d0d0;
-      transform: translateY(-2px);
-    }
-
     .error-message {
       background: #fee;
       color: #c00;
-      padding: 12px;
-      border-radius: 6px;
-      margin-bottom: 15px;
+      padding: 15px;
+      margin-bottom: 20px;
       border-left: 4px solid #c00;
-      font-size: 0.9rem;
+      border-radius: 8px;
+      font-size: 15px;
     }
 
     @media (max-width: 968px) {
@@ -409,73 +391,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     @media (max-width: 576px) {
       .checkout-wrapper {
-        padding: 15px 10px;
+        padding: 20px 15px;
       }
 
       .checkout-form,
       .order-summary {
-        padding: 15px;
+        padding: 20px;
       }
 
-      .checkout-title {
-        font-size: 1.5rem;
+      .page-title {
+        font-size: 26px;
+      }
+
+      .section-heading {
+        font-size: 20px;
       }
     }
   </style>
 </head>
 <body>
   <div class="checkout-wrapper">
-    <a href="cart.php" class="back-to-cart">← Back to Cart</a>
-
-    <div class="checkout-header">
-      <h1 class="checkout-title">🛒 Checkout</h1>
-      <p class="checkout-subtitle">Review your order and complete payment</p>
+    <div class="header-section">
+      <a href="cart.php" class="back-link">← Back to Cart</a>
+      <h1 class="page-title">Checkout</h1>
+      <p class="page-subtitle">Review your order and complete payment</p>
     </div>
 
     <?php if (isset($error_message)): ?>
-      <div class="error-message">⚠️ <?= htmlspecialchars($error_message) ?></div>
+      <div class="error-message"><?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
     <form method="POST">
       <div class="checkout-content">
         <div class="checkout-form">
-          <h2 class="section-title">Delivery Information</h2>
+          <h2 class="section-heading">Delivery Information</h2>
 
           <div class="form-section">
             <span class="section-label">Customer Details</span>
-            <div class="info-display">
+            <div class="info-box">
               <div class="info-row">
-                <span class="info-label">Name:</span>
-                <span><?= htmlspecialchars(trim($customer['first_name'] . ' ' . $customer['middle_name'] . ' ' . $customer['last_name'])) ?></span>
+                <span>Name:</span>
+                <strong><?= htmlspecialchars(trim($customer['first_name'] . ' ' . $customer['middle_name'] . ' ' . $customer['last_name'])) ?></strong>
               </div>
               <div class="info-row">
-                <span class="info-label">Email:</span>
-                <span><?= htmlspecialchars($customer['email']) ?></span>
+                <span>Email:</span>
+                <strong><?= htmlspecialchars($customer['email']) ?></strong>
               </div>
               <div class="info-row">
-                <span class="info-label">Phone:</span>
-                <span><?= htmlspecialchars($customer['phone_number']) ?></span>
+                <span>Phone:</span>
+                <strong><?= htmlspecialchars($customer['phone_number']) ?></strong>
               </div>
               <div class="info-row">
-                <span class="info-label">Address:</span>
-                <span><?= htmlspecialchars($customer['address']) ?></span>
+                <span>Address:</span>
+                <strong><?= htmlspecialchars($customer['address']) ?></strong>
               </div>
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="notes">Order Notes (Optional)</label>
-            <textarea name="notes" id="notes" placeholder="Any special instructions..."></textarea>
-          </div>
+          <h2 class="section-heading">Payment Method</h2>
 
-          <h2 class="section-title">Payment Method</h2>
-
-          <div class="payment-methods">
+          <div class="payment-options">
             <div class="payment-option">
               <input type="radio" id="cod" name="payment_method" value="Cash on Delivery" required>
               <label for="cod" class="payment-label">
-                <span class="payment-icon">💵</span>
-                <div class="payment-details">
+                <div class="payment-text">
                   <div class="payment-name">Cash on Delivery</div>
                   <div class="payment-desc">Pay when your order arrives</div>
                 </div>
@@ -485,8 +464,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="payment-option">
               <input type="radio" id="paypal" name="payment_method" value="PayPal" required>
               <label for="paypal" class="payment-label">
-                <span class="payment-icon">💳</span>
-                <div class="payment-details">
+                <div class="payment-text">
                   <div class="payment-name">PayPal</div>
                   <div class="payment-desc">Pay securely with PayPal</div>
                 </div>
@@ -496,14 +474,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="order-summary">
-          <h2 class="section-title">Order Summary</h2>
+          <h2 class="section-heading">Order Summary</h2>
 
           <div class="order-items">
             <?php foreach ($cart as $id => $item): ?>
               <div class="order-item">
-                <div class="item-info">
+                <div class="item-details">
                   <div class="item-name"><?= htmlspecialchars($item['product_name']) ?></div>
-                  <div class="item-qty">Qty: <?= $item['quantity'] ?> × ₱<?= number_format($item['price'], 2) ?></div>
+                  <div class="item-qty"><?= $item['quantity'] ?> × ₱<?= number_format($item['price'], 2) ?></div>
                 </div>
                 <div class="item-price">
                   ₱<?= number_format($item['price'] * $item['quantity'], 2) ?>
@@ -532,7 +510,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </div>
 
   <script>
-    // Form validation
     document.querySelector('form').addEventListener('submit', function(e) {
       const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
       
@@ -542,7 +519,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         return false;
       }
       
-      // Show loading state
       const btn = document.querySelector('.place-order-btn');
       btn.disabled = true;
       btn.textContent = 'Processing...';
