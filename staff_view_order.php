@@ -55,346 +55,263 @@ $items_result = $items_stmt->get_result();
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     body { 
-      font-family: 'Inter', 'Segoe UI', sans-serif; 
-      background: darkslategray;
-      min-height: 100vh;
+      font-family: Arial, sans-serif; 
+      background: #f5f5f5;
       padding: 20px;
     }
     
     .container {
-      max-width: 1000px;
+      max-width: 900px;
       margin: 0 auto;
     }
     
-    .header-bar {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      padding: 20px 30px;
-      border-radius: 20px;
+    .header {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 25px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     }
     
-    .header-bar h1 {
+    .header h1 {
       font-size: 24px;
-      background: black;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: #333;
     }
     
     .btn {
-      padding: 10px 20px;
-      background: gray;
+      padding: 8px 16px;
+      background: #666;
       color: white;
       border: none;
-      border-radius: 10px;
       text-decoration: none;
-      font-weight: 500;
-      transition: all 0.3s ease;
+      font-size: 14px;
+      margin-left: 10px;
       display: inline-block;
     }
 
-    .btn-edit {
-      background: green;
-      margin-left: 10px;
+    .btn:hover {
+      background: #555;
     }
 
-    .order-card {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 30px;
+    .btn-edit {
+      background: #4CAF50;
+    }
+
+    .btn-edit:hover {
+      background: #45a049;
+    }
+
+    .content-box {
+      background: white;
+      padding: 25px;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+    }
+    
+    .order-info {
       margin-bottom: 25px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-    
-    .order-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      margin-bottom: 30px;
       padding-bottom: 20px;
-      border-bottom: 2px solid #f0f0f0;
+      border-bottom: 2px solid #eee;
     }
     
-    .order-number {
-      font-size: 32px;
-      font-weight: bold;
-      background: black;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    
-    .order-date {
-      text-align: right;
-      color: #666;
-    }
-    
-    .order-date .date {
-      font-size: 18px;
-      font-weight: 600;
+    .order-info h2 {
+      font-size: 28px;
       color: #333;
+      margin-bottom: 10px;
     }
     
-    .order-date .time {
+    .order-meta {
+      color: #666;
       font-size: 14px;
-      margin-top: 5px;
     }
     
-    .info-section {
-      margin-bottom: 30px;
-    }
-    
-    .info-section h3 {
-      font-size: 16px;
-      color: #667eea;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+    .section-title {
+      font-size: 18px;
+      color: #333;
       margin-bottom: 15px;
+      font-weight: bold;
     }
     
-    .customer-info {
+    .info-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 15px;
+      margin-bottom: 30px;
     }
     
-    .info-box {
-      background: #f8f9ff;
-      padding: 15px 20px;
-      border-radius: 12px;
-      border-left: 3px solid #667eea;
+    .info-item {
+      padding: 12px;
+      background: #f9f9f9;
+      border-left: 3px solid #666;
     }
     
-    .info-box label {
-      display: block;
-      font-size: 11px;
-      color: #667eea;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .info-label {
+      font-size: 12px;
+      color: #666;
       margin-bottom: 5px;
+      text-transform: uppercase;
     }
     
-    .info-box .value {
+    .info-value {
       font-size: 16px;
       color: #333;
-      font-weight: 500;
     }
     
-    .items-section h3 {
-      font-size: 18px;
-      color: #333;
-      margin-bottom: 20px;
-    }
-    
-    .order-item {
-      background: #f8f9ff;
-      border-radius: 15px;
-      padding: 20px;
-      margin-bottom: 15px;
+    .item-row {
+      padding: 15px;
+      margin-bottom: 10px;
+      background: #fafafa;
+      border: 1px solid #eee;
       display: flex;
-      gap: 20px;
+      gap: 15px;
       align-items: center;
-      transition: all 0.3s ease;
     }
     
     .item-image {
-      width: 80px;
-      height: 80px;
-      border-radius: 12px;
+      width: 60px;
+      height: 60px;
       object-fit: cover;
-      border: 2px solid #e8ebf7;
+      border: 1px solid #ddd;
     }
     
-    .item-details {
+    .item-info {
       flex: 1;
     }
     
     .item-name {
-      font-size: 18px;
-      font-weight: 600;
+      font-size: 16px;
+      font-weight: bold;
       color: #333;
       margin-bottom: 5px;
     }
     
-    .item-description {
+    .item-desc {
       font-size: 13px;
       color: #666;
-      margin-bottom: 8px;
     }
     
     .item-price {
       font-size: 14px;
-      color: #667eea;
+      color: #666;
+      text-align: right;
+      min-width: 100px;
     }
     
-    .item-quantity {
+    .item-qty {
+      font-size: 16px;
+      color: #333;
       text-align: center;
-      padding: 0 20px;
-    }
-    
-    .item-quantity .label {
-      font-size: 11px;
-      color: #999;
-      text-transform: uppercase;
-    }
-    
-    .item-quantity .qty {
-      font-size: 24px;
-      font-weight: bold;
-      color: #667eea;
+      min-width: 60px;
     }
     
     .item-total {
-      text-align: right;
-      padding: 0 20px;
-    }
-    
-    .item-total .label {
-      font-size: 11px;
-      color: #999;
-      text-transform: uppercase;
-    }
-    
-    .item-total .amount {
-      font-size: 20px;
+      font-size: 16px;
       font-weight: bold;
       color: #333;
+      text-align: right;
+      min-width: 120px;
     }
     
-    .summary-card {
-      background: red;
-      border-radius: 15px;
-      padding: 25px;
+    .total-box {
+      background: #333;
       color: white;
-      margin-top: 30px;
+      padding: 20px;
+      text-align: right;
+      margin-top: 20px;
     }
     
-    .summary-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    .total-box .label {
+      font-size: 14px;
+      margin-bottom: 5px;
     }
     
-    .summary-row:last-child {
-      border-bottom: none;
-      margin-top: 10px;
-      padding-top: 20px;
-      border-top: 2px solid rgba(255, 255, 255, 0.3);
-    }
-    
-    .summary-row.total {
-      font-size: 24px;
+    .total-box .amount {
+      font-size: 28px;
       font-weight: bold;
     }
     
-    .empty-state {
+    .empty {
       text-align: center;
-      padding: 60px 20px;
+      padding: 40px;
       color: #999;
-    }
-    
-    .empty-state svg {
-      width: 80px;
-      height: 80px;
-      margin-bottom: 20px;
-      opacity: 0.3;
     }
     
     @media print {
-      body { background: white; padding: 0; }
-      .header-bar, .btn { display: none; }
-      .order-card { box-shadow: none; }
+      body { background: white; }
+      .header .btn { display: none; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header-bar">
-      <h1>📋 Order Details</h1>
+    <div class="header">
+      <h1>Order Details</h1>
       <div>
-        <a href="staff.php" class="btn">← Back</a>
-        <a href="staff_edit_order.php?id=<?= $order_id ?>" class="btn btn-edit">✏️ Edit Order</a>
+        <a href="staff.php" class="btn">Back</a>
+        <a href="staff_edit_order.php?id=<?= $order_id ?>" class="btn btn-edit">Edit Order</a>
       </div>
     </div>
 
-    <div class="order-card">
-      <div class="order-header">
-        <div>
-          <div class="order-number">Order #<?= htmlspecialchars($order_id) ?></div>
-        </div>
-        <div class="order-date">
-          <div class="date"><?= date('F d, Y', strtotime($order['order_date'])) ?></div>
-          <div class="time">🕐 <?= date('h:i A', strtotime($order['order_time'])) ?></div>
+    <div class="content-box">
+      <div class="order-info">
+        <h2>Order #<?= htmlspecialchars($order_id) ?></h2>
+        <div class="order-meta">
+          <?= date('F d, Y', strtotime($order['order_date'])) ?> at <?= date('h:i A', strtotime($order['order_time'])) ?>
         </div>
       </div>
 
-      <div class="info-section">
-        <h3>👤 Customer Information</h3>
-        <div class="customer-info">
-          <div class="info-box">
-            <label>Customer Name</label>
-            <div class="value"><?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?></div>
-          </div>
-          <div class="info-box">
-            <label>Phone Number</label>
-            <div class="value"><?= htmlspecialchars($order['phone_number']) ?></div>
-          </div>
-          <div class="info-box">
-            <label>Email Address</label>
-            <div class="value"><?= htmlspecialchars($order['email']) ?></div>
-          </div>
+      <div class="section-title">Customer Information</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Customer Name</div>
+          <div class="info-value"><?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Phone Number</div>
+          <div class="info-value"><?= htmlspecialchars($order['phone_number']) ?></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Email Address</div>
+          <div class="info-value"><?= htmlspecialchars($order['email']) ?></div>
         </div>
       </div>
 
-      <div class="items-section">
-        <h3>🛒 Order Items</h3>
-        
-        <?php if ($items_result && $items_result->num_rows > 0): ?>
-          <?php while ($item = $items_result->fetch_assoc()): ?>
-            <div class="order-item">
-              <img src="uploads/<?= htmlspecialchars($item['image']) ?>" 
-                   alt="<?= htmlspecialchars($item['product_name']) ?>" 
-                   class="item-image">
-              
-              <div class="item-details">
-                <div class="item-name"><?= htmlspecialchars($item['product_name']) ?></div>
-                <div class="item-description"><?= htmlspecialchars($item['description']) ?></div>
-                <div class="item-price">₱<?= number_format($item['price'], 2) ?> per item</div>
-              </div>
-              
-              <div class="item-quantity">
-                <div class="label">Quantity</div>
-                <div class="qty">×<?= htmlspecialchars($item['quantity']) ?></div>
-              </div>
-              
-              <div class="item-total">
-                <div class="label">Total</div>
-                <div class="amount">₱<?= number_format($item['total_price'], 2) ?></div>
-              </div>
+      <div class="section-title">Order Items</div>
+      
+      <?php if ($items_result && $items_result->num_rows > 0): ?>
+        <?php while ($item = $items_result->fetch_assoc()): ?>
+          <div class="item-row">
+            <img src="uploads/<?= htmlspecialchars($item['image']) ?>" 
+                 alt="<?= htmlspecialchars($item['product_name']) ?>" 
+                 class="item-image">
+            
+            <div class="item-info">
+              <div class="item-name"><?= htmlspecialchars($item['product_name']) ?></div>
+              <div class="item-desc"><?= htmlspecialchars($item['description']) ?></div>
             </div>
-          <?php endwhile; ?>
-        <?php else: ?>
-          <div class="empty-state">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-            </svg>
-            <p>No items in this order</p>
+            
+            <div class="item-price">
+              ₱<?= number_format($item['price'], 2) ?>
+            </div>
+            
+            <div class="item-qty">
+              × <?= htmlspecialchars($item['quantity']) ?>
+            </div>
+            
+            <div class="item-total">
+              ₱<?= number_format($item['total_price'], 2) ?>
+            </div>
           </div>
-        <?php endif; ?>
-      </div>
+        <?php endwhile; ?>
+      <?php else: ?>
+        <div class="empty">No items in this order</div>
+      <?php endif; ?>
 
-      <div class="summary-card">
-        <div class="summary-row total">
-          <span>Total Amount</span>
-          <span>₱<?= number_format($order['total_amount'], 2) ?></span>
-        </div>
+      <div class="total-box">
+        <div class="label">Total Amount</div>
+        <div class="amount">₱<?= number_format($order['total_amount'], 2) ?></div>
       </div>
     </div>
   </div>
