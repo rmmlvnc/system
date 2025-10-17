@@ -28,18 +28,11 @@ if ($category_id) {
   $cat_stmt->close();
 }
 
-// Get cart count from database if user is logged in
+// Get cart count from session
 $cart_count = 0;
-if (isset($_SESSION['username']) && isset($_SESSION['cart_order_id'])) {
-  $order_id = $_SESSION['cart_order_id'];
-  $cart_count_stmt = $conn->prepare("SELECT SUM(quantity) as total_items FROM order_item WHERE order_id = ?");
-  if ($cart_count_stmt) {
-    $cart_count_stmt->bind_param("i", $order_id);
-    $cart_count_stmt->execute();
-    $cart_count_result = $cart_count_stmt->get_result();
-    $cart_count_row = $cart_count_result->fetch_assoc();
-    $cart_count = $cart_count_row['total_items'] ?? 0;
-    $cart_count_stmt->close();
+if (isset($_SESSION['cart'])) {
+  foreach ($_SESSION['cart'] as $item) {
+    $cart_count += $item['quantity'];
   }
 }
 ?>
@@ -74,7 +67,6 @@ if (isset($_SESSION['username']) && isset($_SESSION['cart_order_id'])) {
     <ul class="links">
       <li><a href="index.php">HOME</a></li>
       <li><a href="menu.php" class="active">MENU</a></li>
-      <li><a href="#">FEEDBACK</a></li>
       <li><a href="aboutus.php">ABOUT US</a></li>
     </ul>
   </nav>
