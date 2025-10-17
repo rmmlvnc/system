@@ -9,7 +9,7 @@ if (!isset($_SESSION['admin'])) {
 
 $username = $_SESSION['admin'];
 
-// Get admin's first name
+// kuhaon amdmin name
 $stmt = $conn->prepare("SELECT first_name FROM admin WHERE username = ?");
 $stmt->bind_param("s", $username);
 $stmt->execute();
@@ -17,7 +17,7 @@ $result = $stmt->get_result();
 $admin = $result->fetch_assoc();
 $first_name = $admin ? $admin['first_name'] : 'Admin';
 
-// Get payment records
+// get payment record
 $result = $conn->query("SELECT payment_id, order_id, payment_method, payment_status, payment_date FROM payment ORDER BY payment_date DESC");
 $payments = [];
 if ($result) {
@@ -26,7 +26,7 @@ if ($result) {
   }
 }
 
-// Get recent orders
+// mga new orders
 $order_result = $conn->query("
   SELECT o.order_id, o.customer_id, o.order_date, o.order_time, o.total_amount,
          c.first_name, c.last_name,
@@ -51,7 +51,6 @@ if ($order_result) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -60,7 +59,7 @@ if ($order_result) {
       padding: 0;
     }
     header.dashboard-header {
-      background: linear-gradient(to right, #2c3e50, #4ca1af);
+      background: #4ca1af;
       color: white;
       padding: 1rem 2rem;
       display: flex;
@@ -169,19 +168,19 @@ if ($order_result) {
     <h2>Dashboard Overview</h2>
 
     <div class="dashboard-section">
-      <h3>👥 Staff Management</h3>
+      <h3>Staff Management</h3>
       <div class="card-grid">
         <div class="card">
           <i class="fas fa-user-shield"></i>
           <h3>Manage Staff</h3>
-          <p>Add, edit, or remove staff accounts</p>
+          <p>Edit staff accounts</p>
           <a href="manage_staff.php">Go</a>
         </div>
       </div>
     </div>
 
     <div class="dashboard-section">
-      <h3>🧾 Customer Payments</h3>
+      <h3>Customer Payments</h3>
       <div class="payment-table">
         <?php if (count($payments) === 0): ?>
           <p>No payments have been made yet.</p>
@@ -224,7 +223,7 @@ if ($order_result) {
     </div>
 
     <div class="dashboard-section">
-      <h3>📦 Recent Orders</h3>
+      <h3>Recent Orders</h3>
       <div class="order-table">
         <?php if (count($orders) === 0): ?>
           <p>No orders have been placed yet.</p>
