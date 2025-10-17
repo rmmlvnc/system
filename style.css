@@ -50,12 +50,6 @@ body.index {
   transition: all 0.3s ease;
 }
 
-.nav-actions a:hover {
-  background-color: #c89963;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
 .welcome-text {
   background-color: white;
   color: #2c1810;
@@ -75,11 +69,6 @@ body.index {
   font-weight: bold;
   text-decoration: none;
   transition: all 0.3s ease;
-}
-
-.logout-btn:hover {
-  background-color: #8b4513;
-  color: white;
 }
 
 .links {
@@ -102,7 +91,6 @@ body.index {
   transition: all 0.3s ease;
 }
 
-.links li a:hover,
 .links li a.active {
   background-color: #d4a574;
   color: #2c1810;
@@ -182,22 +170,9 @@ body.index {
   gap: 10px;
   color: #333;
   font-size: 0.95rem;
-  font-weight: 600;
-}
+  font-weight: 700;
+  border-bottom: 3px solid #d4a574;
 
-.feature-item::before {
-  content: '✓';
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  background-color: #8b4513;
-  color: white;
-  border-radius: 50%;
-  font-weight: bold;
-  font-size: 0.85rem;
-  flex-shrink: 0;
 }
 
 .reserve-btn-large {
@@ -212,12 +187,6 @@ body.index {
   box-shadow: 0 6px 16px rgba(139, 69, 19, 0.3);
   align-self: flex-start;
   transition: all 0.3s ease;
-}
-
-.reserve-btn-large:hover {
-  background-color: #6d3410;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(139, 69, 19, 0.4);
 }
 
 .reservation-image {
@@ -286,11 +255,6 @@ body.index {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.menu-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 24px rgba(44, 24, 16, 0.15);
-}
-
 .menu-card-image {
   width: 100%;
   height: 220px;
@@ -343,12 +307,6 @@ body.index {
   transition: all 0.3s ease;
 }
 
-.order-btn-small:hover {
-  background-color: #6d3410;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(139, 69, 19, 0.3);
-}
-
 /* ================================ CTA SECTION ================================ */
 .cta-section {
   max-width: 1200px;
@@ -357,36 +315,14 @@ body.index {
 }
 
 .cta-box {
-  background: linear-gradient(135deg, #2c1810 0%, #3d2417 100%);
+  background:#634534;
   border-radius: 16px;
   padding: 60px 40px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(44, 24, 16, 0.2);
   position: relative;
   overflow: hidden;
 }
 
-.cta-box::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -10%;
-  width: 300px;
-  height: 300px;
-  background: rgba(212, 165, 116, 0.15);
-  border-radius: 50%;
-}
-
-.cta-box::after {
-  content: '';
-  position: absolute;
-  bottom: -30%;
-  left: -5%;
-  width: 250px;
-  height: 250px;
-  background: rgba(212, 165, 116, 0.1);
-  border-radius: 50%;
-}
 
 .cta-box h2 {
   font-size: 2.2rem;
@@ -426,15 +362,9 @@ body.index {
 }
 
 .cta-btn-primary {
-  background-color: #8b4513;
+  background-color: #000000;
   color: white;
   box-shadow: 0 6px 16px rgba(139, 69, 19, 0.3);
-}
-
-.cta-btn-primary:hover {
-  background-color: #6d3410;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(139, 69, 19, 0.4);
 }
 
 .cta-btn-secondary {
@@ -443,10 +373,6 @@ body.index {
   border: 2px solid white;
 }
 
-.cta-btn-secondary:hover {
-  background: #d4a574;
-  border-color: #d4a574;
-}
 
 /* ================================ GENERAL COMPONENTS ================================ */
 .customer-welcome p {
@@ -529,11 +455,6 @@ body.index {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.feature-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 10px 20px rgba(44, 24, 16, 0.15);
-}
-
 .feature-card img {
   width: 100%;
   height: 160px;
@@ -571,11 +492,6 @@ body.index {
   box-shadow: 0 4px 12px rgba(44, 24, 16, 0.1);
   transition: transform 0.3s ease;
   text-align: center;
-}
-
-.product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 16px rgba(44, 24, 16, 0.15);
 }
 
 .product-card img {
@@ -706,10 +622,6 @@ body.index {
   margin-top: 10px;
 }
 
-.reg-btn:hover {
-  background-color: #6d3410;
-}
-
 .form-footer {
   text-align: center;
   margin-top: 20px;
@@ -721,11 +633,6 @@ body.index {
   color: #8b4513;
   text-decoration: none;
   font-weight: 600;
-}
-
-.form-footer a:hover {
-  text-decoration: underline;
-  color: #6d3410;
 }
 
 .two-column-form {
@@ -762,12 +669,6 @@ body.index {
   color: #2c1810;
 }
 
-.cart-icon:hover {
-  background: #d4a574;
-  color: #2c1810;
-  transform: scale(1.1);
-}
-
 /* ================================ RESERVATION BUTTON ================================ */
 .reserve-btn {
   display: inline-block;
@@ -781,12 +682,6 @@ body.index {
   text-decoration: none;
   box-shadow: 0 4px 10px rgba(139, 69, 19, 0.3);
   transition: all 0.3s ease;
-}
-
-.reserve-btn:hover {
-  background: #6d3410;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(139, 69, 19, 0.4);
 }
 
 /* ================================ RESPONSIVE DESIGN ================================ */
