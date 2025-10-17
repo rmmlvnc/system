@@ -1,5 +1,13 @@
 <?php
 session_start();
+
+// cart count sa session
+$cart_count = 0;
+if (isset($_SESSION['cart'])) {
+  foreach ($_SESSION['cart'] as $item) {
+    $cart_count += $item['quantity'];
+  }
+}
 ?>
 
 <!DOCTYPE html>
@@ -17,6 +25,8 @@ session_start();
       <div class="nav-actions">
         <?php if (isset($_SESSION['username'])): ?>
           <span class="welcome-text">👋 Welcome, <?= htmlspecialchars($_SESSION['username']) ?></span>
+          <a href="profile.php" class="btn profile-btn" title="View Profile">👤 Profile</a>
+          <a href="cart.php" class="cart-icon" title="View Cart">🛒<?= $cart_count > 0 ? " ($cart_count)" : "" ?></a>
           <a href="customer_logout.php" class="btn logout-btn">LOG OUT</a>
         <?php else: ?>
           <a href="login.php" class="btn login-btn">LOGIN</a>
@@ -30,7 +40,6 @@ session_start();
     <ul class="links">
       <li><a href="index.php">HOME</a></li>
       <li><a href="menu.php">MENU</a></li>
-      <li><a href="#">FEEDBACK</a></li>
       <li><a href="aboutus.php" class="active">ABOUT US</a></li>
     </ul>
   </nav>
