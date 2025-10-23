@@ -51,9 +51,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
   $price_per_hour = $table_row['price_per_hour'] ?? 0;
   $total_price = $price_per_hour * $total_hours;
   $table_stmt->close();
-
-  $stmt = $conn->prepare("INSERT INTO reservation (customer_id, table_id, reservation_date, reservation_time, event_type, status, total_hours, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-  $stmt->bind_param("iissssiid", $customer_id, $table_id, $date, $time, $event_type, $status, $total_hours, $total_price);
+  
+  $stmt = $conn->prepare("INSERT INTO reservation (customer_id, table_id, reservation_date, reservation_time, event_type, status, total_hours, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+  $stmt->bind_param("iissssid", $customer_id, $table_id, $date, $time, $event_type, $status, $total_hours, $total_price);
   
   if ($stmt->execute()) {
     if ($total_price > 0) {
