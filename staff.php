@@ -1,418 +1,410 @@
 <?php
 session_start();
-include("database.php");
+include 'database.php';
 
-if (!isset($_SESSION['username'])) {
-  header("Location: login.php");
+if (!isset($_SESSION['staff_id'])) {
+  header("Location: staff_login.php");
   exit();
 }
 
-$customer = $_SESSION['username'];
+$staff_id = $_SESSION['staff_id'];
 $message = "";
 $messageType = "";
 
-// Get customer_id from username
-$cust_stmt = $conn->prepare("SELECT customer_id, first_name, middle_name, last_name, email, phone_number FROM customer WHERE username = ?");
-$cust_stmt->bind_param("s", $customer);
-$cust_stmt->execute();
-$cust_result = $cust_stmt->get_result();
-$cust_row = $cust_result->fetch_assoc();
-$customer_id = $cust_row['customer_id'];
-$fullname = trim($cust_row['first_name'] . ' ' . $cust_row['middle_name'] . ' ' . $cust_row['last_name']);
-$email = $cust_row['email'];
-$phone = $cust_row['phone_number'];
-
-// Cancel reservation
-if (isset($_POST['cancel_reservation_id'])) {
-  $reservation_id = $_POST['cancel_reservation_id'];
-  $cancel_stmt = $conn->prepare("DELETE FROM reservation WHERE reservation_id = ? AND customer_id = ?");
-  $cancel_stmt->bind_param("ii", $reservation_id, $customer_id);
-  $cancel_stmt->execute();
-  $message = "Reservation cancelled successfully!";
-  $messageType = "success";
-}
-
-// Make reservation
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
-  $table_id = $_POST['table_id'];
-  $date = $_POST['reservation_date'];
-  $time = $_POST['reservation_time'];
-  $event_type = $_POST['event_type'];
-  $total_hours = $_POST['total_hours'] ?? 2;
-  $status = 'Pending';
+// Update reservation status
+if (isset($_POST['update_reservation_status'])) {
+  $reservation_id = $_POST['reservation_id'];
+  $new_status = $_POST['reservation_status'];
   
-  // Get table info
-  $table_stmt = $conn->prepare("SELECT capacity, price_per_hour FROM tables WHERE table_id = ?");
-  $table_stmt->bind_param("i", $table_id);
-  $table_stmt->execute();
-  $table_result = $table_stmt->get_result();
-  $table_row = $table_result->fetch_assoc();
-  $guest_count = $table_row['capacity'];
-  $price_per_hour = $table_row['price_per_hour'] ?? 0;
-  $total_price = $price_per_hour * $total_hours;
-  $table_stmt->close();
+  $update_stmt = $conn->prepare("UPDATE reservation SET status = ? WHERE reservation_id = ?");
+  $update_stmt->bind_param("si", $new_status, $reservation_id);
   
-  $stmt = $conn->prepare("INSERT INTO reservation (customer_id, table_id, reservation_date, reservation_time, event_type, status, total_hours, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-  $stmt->bind_param("iissssid", $customer_id, $table_id, $date, $time, $event_type, $status, $total_hours, $total_price);
-  
-  if ($stmt->execute()) {
-    if ($total_price > 0) {
-      $message = "Reservation submitted successfully! Total Cost: ₱" . number_format($total_price, 2) . ". Our staff will confirm your booking shortly.";
-    } else {
-      $message = "Reservation submitted successfully! Our staff will confirm your booking shortly.";
-    }
+  if ($update_stmt->execute()) {
+    $message = "Reservation status updated to " . $new_status . " successfully!";
     $messageType = "success";
   } else {
-    $message = "Error: " . $stmt->error;
+    $message = "Error updating reservation: " . $conn->error;
     $messageType = "error";
   }
-  $stmt->close();
+  $update_stmt->close();
 }
+
+// Fetch staff info
+$staff_stmt = $conn->prepare("SELECT * FROM staff WHERE staff_id = ?");
+$staff_stmt->bind_param("i", $staff_id);
+$staff_stmt->execute();
+$staff_result = $staff_stmt->get_result();
+$staff = $staff_result->fetch_assoc();
+$staff_stmt->close();
+
+// Fetch payment records
+$payment_result = $conn->query("
+  SELECT 
+    p.payment_id, 
+    p.order_id, 
+    p.payment_method, 
+    p.payment_status, 
+    p.payment_date,
+    o.total_amount,
+    CONCAT(c.first_name, ' ', c.last_name) as customer_name
+  FROM payment p
+  JOIN orders o ON p.order_id = o.order_id
+  JOIN customer c ON o.customer_id = c.customer_id
+  ORDER BY p.payment_date DESC
+");
+
+// Fetch reservations - JOIN with customer table
+$res_stmt = $conn->prepare("
+  SELECT 
+    r.*,
+    t.table_number,
+    t.capacity,
+    t.table_type,
+    CONCAT(c.first_name, ' ', c.last_name) as customer_name,
+    c.phone_number
+  FROM reservation r
+  LEFT JOIN tables t ON r.table_id = t.table_id
+  LEFT JOIN customer c ON r.customer_id = c.customer_id
+  ORDER BY r.reservation_date DESC, r.reservation_time DESC
+");
+$res_stmt->execute();
+$res_result = $res_stmt->get_result();
+$res_stmt->close();
+
+// Fetch customer orders
+$orders_stmt = $conn->prepare("
+  SELECT 
+    o.order_id,
+    o.customer_id,
+    o.order_date,
+    o.order_time,
+    o.total_amount,
+    c.first_name,
+    c.last_name,
+    c.phone_number
+  FROM `orders` o
+  LEFT JOIN customer c ON o.customer_id = c.customer_id
+  ORDER BY o.order_date DESC, o.order_time DESC
+");
+
+$orders_result = null;
+$prepare_error = null;
+
+if ($orders_stmt) {
+  $orders_stmt->execute();
+  $orders_result = $orders_stmt->get_result();
+  $orders_stmt->close();
+} else {
+  $prepare_error = $conn->error;
+}
+
+// Fetch products with category names
+$product_stmt = $conn->prepare("
+  SELECT 
+    p.*,
+    c.category_name
+  FROM product p
+  LEFT JOIN category c ON p.category_id = c.category_id
+  ORDER BY p.product_name
+");
+$product_stmt->execute();
+$product_result = $product_stmt->get_result();
+$product_stmt->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reserve a Table | Kyla's Bistro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Dashboard - Kyla's Bistro</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f9f6f2;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body { 
+      font-family: 'Inter', 'Segoe UI', sans-serif; 
+      background: lightslategrey;
       min-height: 100vh;
       padding: 20px;
-      color: #2c1810;
     }
-
+    
     .container {
-      max-width: 1000px;
+      max-width: 1400px;
       margin: 0 auto;
     }
-
-    .back-link {
-      display: inline-block;
-      padding: 10px 20px;
-      background-color: #8b4513;
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      margin-bottom: 20px;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 5px rgba(139, 69, 19, 0.2);
-      font-weight: 600;
-    }
-
-    h1 {
-      text-align: center;
-      color: #8b4513;
-      margin-bottom: 10px;
-      font-size: 2.2rem;
-      font-weight: 600;
-    }
-
-    .subtitle {
-      text-align: center;
-      color: #555;
+    
+    .header { 
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 25px 35px;
+      border-radius: 20px;
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
       margin-bottom: 30px;
-      font-size: 1rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header h1 { 
+      font-size: 28px;
+      background: black;
+      background-clip: text;
+    }
+    
+    .btn { 
+      padding: 10px 20px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      text-decoration: none;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-block;
+    }
+
+    .btn:hover {
+      background: #c82333;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-edit { 
+      background: #28a745;
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+
+    .btn-edit:hover {
+      background: #218838;
+    }
+    
+    .btn-view { 
+      background: #007bff;
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+
+    .btn-view:hover {
+      background: #0056b3;
+    }
+
+    .btn-update {
+      background: #17a2b8;
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+
+    .btn-update:hover {
+      background: #138496;
     }
 
     .message {
-      padding: 12px;
-      border-radius: 8px;
+      padding: 15px 20px;
+      border-radius: 12px;
       margin-bottom: 20px;
-      text-align: center;
-      font-weight: 600;
+      font-weight: 500;
+      animation: slideDown 0.3s ease;
     }
 
     .message.success {
-      background-color: #d4edda;
+      background: #d4edda;
       color: #155724;
       border: 1px solid #c3e6cb;
     }
 
     .message.error {
-      background-color: #f8d7da;
+      background: #f8d7da;
       color: #721c24;
       border: 1px solid #f5c6cb;
     }
 
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 25px;
-      margin-bottom: 25px;
-      box-shadow: 0 4px 12px rgba(44, 24, 16, 0.1);
-      border: 1px solid #f5e6d3;
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-
-    .card h2 {
-      color: #8b4513;
+    
+    .info-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 25px 35px;
+      border-radius: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .info-card h2 {
+      font-size: 20px;
       margin-bottom: 20px;
-      padding-bottom: 12px;
-      border-bottom: 3px solid #d4a574;
-      font-size: 1.5rem;
-      font-weight: 600;
+      color: black;
+      padding-left: 15px;
     }
-
-    .form-group {
-      margin-bottom: 15px;
-    }
-
-    .form-group label {
-      display: block;
-      font-weight: 600;
-      color: #2c1810;
-      margin-bottom: 8px;
-      font-size: 0.95rem;
-    }
-
-    .form-group input[type="date"],
-    .form-group input[type="time"],
-    .form-group input[type="number"],
-    .form-group select {
-      width: 100%;
-      padding: 10px 12px;
-      border: 2px solid #d4a574;
-      border-radius: 8px;
-      font-size: 14px;
-      transition: all 0.3s ease;
-      background-color: #f9f9f9;
-    }
-
-    .form-group input:focus {
-      outline: none;
-      border-color: #8b4513;
-      box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
-      background-color: white;
-    }
-
-    .form-row {
+    
+    .info-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 15px;
     }
-
-    .event-types {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-
-    .event-option {
-      flex: 1;
-    }
-
-    .event-option input[type="radio"] {
-      display: none;
-    }
-
-    .event-label {
-      display: block;
-      padding: 15px 12px;
-      background: #f9f6f2;
-      border: 2px solid #d4a574;
-      border-radius: 8px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: 500;
-      color: #2c1810;
-    }
-
-    .event-option input[type="radio"]:checked + .event-label {
-      background: #8b4513;
-      border-color: #8b4513;
-      color: white;
-      font-weight: 600;
-      box-shadow: 0 4px 10px rgba(139, 69, 19, 0.3);
-    }
-
-    .event-label:hover {
-      border-color: #000000ff;
-    }
-
-    .table-list {
-      margin: 15px 0;
-    }
-
-    .table-category h4 {
-      margin: 15px 0 10px 0;
-      color: #8b4513;
-      font-weight: 600;
-    }
-
-    .table-item {
-      display: flex;
-      align-items: center;
-      padding: 12px;
-      background: white;
-      border: 2px solid #f5e6d3;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .table-item:hover {
-      background: #f9f6f2;
-      border-color: #d4a574;
-      transform: translateX(5px);
-    }
-
-    .table-item input[type="radio"]:checked + .table-info {
-      font-weight: 600;
-    }
-
-    .table-item input[type="radio"] {
-      margin-right: 12px;
-      width: 18px;
-      height: 18px;
-      accent-color: #8b4513;
-    }
-
-    .table-info {
-      flex: 1;
-    }
-
-    .table-name {
-      font-weight: bold;
-      color: #2c1810;
-    }
-
-    .table-desc {
-      font-size: 12px;
-      color: #555;
-    }
-
-    .table-price {
-      font-weight: bold;
-      color: #8b4513;
-      margin-left: 10px;
-    }
-
-    .price-display {
-      background: #f5e6d3;
+    
+    .info-item {
+      background: #f8f9ff;
       padding: 15px;
-      border-radius: 8px;
-      border: 2px solid #d4a574;
-      text-align: center;
-      margin: 15px 0;
-      display: none;
-      box-shadow: 0 2px 8px rgba(139, 69, 19, 0.15);
+      border-radius: 12px;
     }
-
-    .total-price {
-      color: #8b4513;
-      font-size: 24px;
-      font-weight: 700;
-    }
-
-    .submit-btn {
-      width: 100%;
-      padding: 14px;
-      background: #8b4513;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+    
+    .info-item strong {
+      display: block;
+      color: black;
+      font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      margin-bottom: 5px;
     }
-
-    .reservations-table {
+    
+    .info-item span {
+      color: #333;
+      font-size: 16px;
+    }
+    
+    .section { 
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .section-header h2 {
+      font-size: 22px;
+      color: #333;
+    }
+    
+    table { 
       width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
+      border-collapse: separate;
+      border-spacing: 0 10px;
     }
-
-    .reservations-table th {
-      background: #2c1810;
-      color: white;
+    
+    th { 
+      padding: 12px 15px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      color: #667eea;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: transparent;
+    }
+    
+    td { 
+      padding: 15px;
+      background: #f8f9ff;
+      border-top: 1px solid #e8ebf7;
+      border-bottom: 1px solid #e8ebf7;
+    }
+    
+    td:first-child {
+      border-left: 1px solid #e8ebf7;
+      border-radius: 10px 0 0 10px;
+    }
+    
+    td:last-child {
+      border-right: 1px solid #e8ebf7;
+      border-radius: 0 10px 10px 0;
+    }
+    
+    .action-buttons { 
+      display: flex;
+      gap: 8px;
+    }
+    
+    .product-img { 
+      width: 70px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 2px solid #e8ebf7;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
       font-weight: 600;
     }
-
-    .reservations-table th,
-    .reservations-table td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #f5e6d3;
-    }
-
-    .reservations-table tbody tr {
-      transition: background 0.2s ease;
-    }
-
-    .reservations-table tbody tr:hover {
-      background: #f9f6f2;
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 3px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .status-pending {
-      background-color: #fff3cd;
-      color: #856404;
-    }
-
-    .status-confirmed {
-      background-color: #d4edda;
-      color: #155724;
-    }
-
-    .cancel-btn {
-      padding: 6px 12px;
-      background-color: #dc3545;
-      color: white;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    .cancel-btn:hover {
-      background-color: #c82333;
-    }
-
-    .no-reservations {
+    
+    .badge-pending { background: #fff3cd; color: #856404; }
+    .badge-confirmed { background: #d4edda; color: #155724; }
+    .badge-cancelled { background: #f8d7da; color: #721c24; }
+    .badge-paid { background: #d4edda; color: #155724; }
+    
+    .empty-state {
       text-align: center;
-      padding: 30px;
+      padding: 60px 20px;
       color: #999;
     }
-
-    #durationField {
-      display: none;
+    
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+    
+    .error-message {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
     }
 
-    @media (max-width: 768px) {
-      .event-types,
-      .form-row {
-        grid-template-columns: 1fr;
-      }
+    select {
+      padding: 6px 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-right: 8px;
+    }
+
+    .payment-form,
+    .reservation-form {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .reservation-details {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <a href="index.php" class="back-link">← Back to Home</a>
-
-    <h1>Reserve Your Table</h1>
-    <p class="subtitle">Choose your perfect dining experience at Kyla's Bistro</p>
+    <div class="header">
+      <h1>Welcome, <?= htmlspecialchars($staff['first_name']) ?> 👋</h1>
+      <a href="staff_logout.php" class="btn">Logout</a>
+    </div>
 
     <?php if ($message): ?>
       <div class="message <?= $messageType ?>">
@@ -420,121 +412,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
       </div>
     <?php endif; ?>
 
-    <div class="card">
-      <h2>Make a Reservation</h2>
-      <form method="POST" id="reservationForm">
-        
-        <!-- Event Type -->
-        <div class="form-group">
-          <label>Select Dining Type</label>
-          <div class="event-types">
-            <div class="event-option">
-              <input type="radio" id="regular" name="event_type" value="Regular Dining" checked onchange="handleEventChange()">
-              <label for="regular" class="event-label">🍽️ Regular Dining</label>
-            </div>
-            <div class="event-option">
-              <input type="radio" id="birthday" name="event_type" value="Birthday Party" onchange="handleEventChange()">
-              <label for="birthday" class="event-label">🎂 Birthday Party</label>
-            </div>
-            <div class="event-option">
-              <input type="radio" id="meeting" name="event_type" value="Meeting" onchange="handleEventChange()">
-              <label for="meeting" class="event-label">💼 Meeting</label>
-            </div>
-          </div>
+    <div class="info-card">
+      <h2>Your Profile</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <strong>Username</strong>
+          <span><?= htmlspecialchars($staff['username']) ?></span>
         </div>
-
-        <!-- Date & Time -->
-        <div class="form-row">
-          <div class="form-group">
-            <label>Date</label>
-            <input type="date" name="reservation_date" required min="<?= date('Y-m-d') ?>" />
-          </div>
-          <div class="form-group">
-            <label>Time</label>
-            <input type="time" name="reservation_time" required />
-          </div>
+        <div class="info-item">
+          <strong>Email Address</strong>
+          <span><?= htmlspecialchars($staff['email']) ?></span>
         </div>
-
-        <!-- Duration Field (only for Birthday & Meeting) -->
-        <div class="form-group" id="durationField">
-          <label>Duration (Hours)</label>
-          <input type="number" name="total_hours" id="total_hours" min="1" max="12" value="2" onchange="updatePrice()" />
-          <small style="color: #666;">Specify how many hours you need the room</small>
+        <div class="info-item">
+          <strong>Contact Number</strong>
+          <span><?= htmlspecialchars($staff['contact_number']) ?></span>
         </div>
-
-        <!-- Select Table -->
-        <div class="form-group">
-          <label>Select Table/Room</label>
-          <div class="table-list" id="tablesList">
-            <?php
-            $tables_query = "SELECT table_id, table_number, capacity, table_type, description, price_per_hour 
-                             FROM tables 
-                             WHERE status = 'Available' 
-                             ORDER BY table_type, table_number";
-            
-            $tables_result = $conn->query($tables_query);
-            $grouped_tables = [];
-            while ($table = $tables_result->fetch_assoc()) {
-              $type = $table['table_type'];
-              $grouped_tables[$type][] = $table;
-            }
-            
-            foreach ($grouped_tables as $type => $tables):
-            ?>
-              <div class="table-category" data-table-type="<?= htmlspecialchars($type) ?>">
-                <h4><?= htmlspecialchars($type) ?></h4>
-                <?php foreach ($tables as $table): ?>
-                  <label class="table-item">
-                    <input type="radio" name="table_id" value="<?= $table['table_id'] ?>" 
-                           required data-price="<?= $table['price_per_hour'] ?>" onchange="updatePrice()">
-                    <div class="table-info">
-                      <div class="table-name">Table <?= htmlspecialchars($table['table_number']) ?></div>
-                      <div class="table-desc">
-                        <?php if ($table['description']): ?>
-                          <?= htmlspecialchars($table['description']) ?> • 
-                        <?php endif; ?>
-                        Capacity: <?= $table['capacity'] ?> guests
-                      </div>
-                    </div>
-                    <div class="table-price">
-                      <?= $table['price_per_hour'] > 0 ? '₱' . number_format($table['price_per_hour'], 2) . '/hr' : 'Free' ?>
-                    </div>
-                  </label>
-                <?php endforeach; ?>
-              </div>
-            <?php endforeach; ?>
-          </div>
-
-          <div id="priceDisplay" class="price-display">
-            <strong>Total Cost:</strong> 
-            <span id="totalPrice" class="total-price">₱0.00</span>
-          </div>
-        </div>
-
-        <button type="submit" class="submit-btn">Submit Reservation</button>
-      </form>
+      </div>
     </div>
 
-    <!-- My Reservations -->
-    <div class="card">
-      <h2>My Reservations</h2>
-      <?php
-      $reservations_query = $conn->prepare("SELECT r.reservation_id, r.reservation_date, r.reservation_time, r.event_type, r.status, r.total_hours, r.total_price, t.table_number, t.table_type 
-                                             FROM reservation r 
-                                             JOIN tables t ON r.table_id = t.table_id 
-                                             WHERE r.customer_id = ? 
-                                             ORDER BY r.reservation_date DESC, r.reservation_time DESC");
-      $reservations_query->bind_param("i", $customer_id);
-      $reservations_query->execute();
-      $reservations_result = $reservations_query->get_result();
-
-      if ($reservations_result->num_rows > 0):
-      ?>
-        <table class="reservations-table">
+    <!-- Reservations Section -->
+    <div class="section">
+      <div class="section-header">
+        <h2>Customer Reservations</h2>
+      </div>
+      
+      <?php if ($res_result && $res_result->num_rows > 0): ?>
+        <table>
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Time</th>
+              <th>Customer</th>
+              <th>Contact</th>
+              <th>Date & Time</th>
               <th>Table/Room</th>
               <th>Event Type</th>
               <th>Duration</th>
@@ -544,108 +452,214 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['table_id'])) {
             </tr>
           </thead>
           <tbody>
-            <?php while ($res = $reservations_result->fetch_assoc()): ?>
+            <?php while ($row = $res_result->fetch_assoc()): ?>
               <tr>
-                <td><?= date('M d, Y', strtotime($res['reservation_date'])) ?></td>
-                <td><?= date('h:i A', strtotime($res['reservation_time'])) ?></td>
-                <td><?= htmlspecialchars($res['table_number']) ?></td>
-                <td><?= htmlspecialchars($res['event_type']) ?></td>
-                <td><?= $res['total_hours'] ?> hr<?= $res['total_hours'] > 1 ? 's' : '' ?></td>
                 <td>
-                  <?= $res['total_price'] > 0 ? '₱' . number_format($res['total_price'], 2) : 'Free' ?>
+                  <strong><?= $row['customer_name'] ? htmlspecialchars($row['customer_name']) : '<em style="color: #999;">N/A</em>' ?></strong>
+                </td>
+                <td><?= $row['phone_number'] ? htmlspecialchars($row['phone_number']) : '<em style="color: #999;">N/A</em>' ?></td>
+                <td>
+                  <strong><?= date('M d, Y', strtotime($row['reservation_date'])) ?></strong>
+                  <div class="reservation-details"><?= date('h:i A', strtotime($row['reservation_time'])) ?></div>
                 </td>
                 <td>
-                  <span class="status-badge status-<?= strtolower($res['status']) ?>">
-                    <?= htmlspecialchars($res['status']) ?>
+                  <strong><?= $row['table_number'] ? 'Table ' . htmlspecialchars($row['table_number']) : '<em style="color: #999;">Not assigned</em>' ?></strong>
+                  <div class="reservation-details"><?= htmlspecialchars($row['table_type'] ?? 'N/A') ?></div>
+                </td>
+                <td><?= $row['event_type'] ? htmlspecialchars($row['event_type']) : '<em style="color: #999;">N/A</em>' ?></td>
+                <td><?= $row['total_hours'] ? htmlspecialchars($row['total_hours']) . ' hrs' : '<em style="color: #999;">N/A</em>' ?></td>
+                <td>
+                  <strong><?= $row['total_price'] > 0 ? '₱' . number_format($row['total_price'], 2) : 'Free' ?></strong>
+                </td>
+                <td>
+                  <span class="badge badge-<?= strtolower($row['status']) ?>">
+                    <?= htmlspecialchars($row['status']) ?>
                   </span>
                 </td>
                 <td>
-                  <?php if ($res['status'] === 'Pending'): ?>
-                    <form method="POST" style="display: inline;" onsubmit="return confirm('Cancel this reservation?');">
-                      <input type="hidden" name="cancel_reservation_id" value="<?= $res['reservation_id'] ?>">
-                      <button type="submit" class="cancel-btn">Cancel</button>
-                    </form>
-                  <?php else: ?>
-                    -
-                  <?php endif; ?>
+                  <form method="POST" class="reservation-form">
+                    <input type="hidden" name="reservation_id" value="<?= $row['reservation_id'] ?>">
+                    <input type="hidden" name="update_reservation_status" value="1">
+                    <select name="reservation_status">
+                      <option value="Pending" <?= $row['status'] === 'Pending' ? 'selected' : '' ?>>Pending</option>
+                      <option value="Confirmed" <?= $row['status'] === 'Confirmed' ? 'selected' : '' ?>>Confirmed</option>
+                      <option value="Cancelled" <?= $row['status'] === 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                    </select>
+                    <button type="submit" class="btn btn-update">Update</button>
+                  </form>
                 </td>
               </tr>
             <?php endwhile; ?>
           </tbody>
         </table>
       <?php else: ?>
-        <div class="no-reservations">
-          <p>You don't have any reservations yet.</p>
+        <div class="empty-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <p>No reservations found</p>
+        </div>
+      <?php endif; ?>
+    </div>
+
+    <!-- Customer Payments Section -->
+    <div class="section">
+      <div class="section-header">
+        <h2>Customer Payments</h2>
+      </div>
+      
+      <?php if ($payment_result && $payment_result->num_rows > 0): ?>
+        <table>
+          <thead>
+            <tr>
+              <th>Payment ID</th>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php while ($payment = $payment_result->fetch_assoc()): ?>
+              <tr>
+                <td><strong>#<?= htmlspecialchars($payment['payment_id']) ?></strong></td>
+                <td>#<?= htmlspecialchars($payment['order_id']) ?></td>
+                <td><?= htmlspecialchars($payment['customer_name']) ?></td>
+                <td><strong>₱<?= number_format($payment['total_amount'], 2) ?></strong></td>
+                <td><?= htmlspecialchars($payment['payment_method']) ?></td>
+                <td>
+                  <span class="badge badge-<?= strtolower($payment['payment_status']) ?>">
+                    <?= htmlspecialchars($payment['payment_status']) ?>
+                  </span>
+                </td>
+                <td><?= date('M d, Y', strtotime($payment['payment_date'])) ?></td>
+                <td>
+                  <form method="POST" action="update_payment_status.php" class="payment-form">
+                    <input type="hidden" name="payment_id" value="<?= $payment['payment_id'] ?>">
+                    <select name="payment_status">
+                      <option value="Pending" <?= $payment['payment_status'] === 'Pending' ? 'selected' : '' ?>>Pending</option>
+                      <option value="Paid" <?= $payment['payment_status'] === 'Paid' ? 'selected' : '' ?>>Paid</option>
+                    </select>
+                    <button type="submit" class="btn btn-update">Update</button>
+                  </form>
+                </td>
+              </tr>
+            <?php endwhile; ?>
+          </tbody>
+        </table>
+      <?php else: ?>
+        <div class="empty-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <p>No payments found</p>
+        </div>
+      <?php endif; ?>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>Customer Orders</h2>
+      </div>
+      
+      <?php if ($prepare_error): ?>
+        <div class="error-message">
+          ⚠️ Error loading orders: <?= htmlspecialchars($prepare_error) ?>
+        </div>
+      <?php elseif ($orders_result && $orders_result->num_rows > 0): ?>
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Contact</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Total</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php while ($order = $orders_result->fetch_assoc()): ?>
+              <tr>
+                <td><strong>#<?= htmlspecialchars($order['order_id']) ?></strong></td>
+                <td><?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?></td>
+                <td><?= htmlspecialchars($order['phone_number']) ?></td>
+                <td><?= date('M d, Y', strtotime($order['order_date'])) ?></td>
+                <td><?= date('h:i A', strtotime($order['order_time'])) ?></td>
+                <td><strong>₱<?= number_format($order['total_amount'], 2) ?></strong></td>
+                <td>
+                  <div class="action-buttons">
+                    <a href="staff_view_order.php?id=<?= $order['order_id'] ?>" class="btn btn-view">View</a>
+                    <a href="staff_edit_order.php?id=<?= $order['order_id'] ?>" class="btn btn-edit">Edit</a>
+                  </div>
+                </td>
+              </tr>
+            <?php endwhile; ?>
+          </tbody>
+        </table>
+      <?php else: ?>
+        <div class="empty-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <p>No orders found</p>
+        </div>
+      <?php endif; ?>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>Products</h2>
+        <a href="staff_add_product.php" class="btn">➕ Add Product</a>
+      </div>
+      
+      <?php if ($product_result && $product_result->num_rows > 0): ?>
+        <table>
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Price</th>
+              <th>Category</th>
+              <th>Stock</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php while ($prod = $product_result->fetch_assoc()): ?>
+              <tr>
+                <td>
+                  <img src="uploads/<?= htmlspecialchars($prod['image']) ?>" 
+                       alt="<?= htmlspecialchars($prod['product_name']) ?>" 
+                       class="product-img"
+                       onerror="this.src='uploads/placeholder.jpg'" />
+                </td>
+                <td><strong><?= htmlspecialchars($prod['product_name']) ?></strong></td>
+                <td><?= htmlspecialchars(substr($prod['description'], 0, 50)) ?>...</td>
+                <td><strong>₱<?= number_format($prod['price'], 2) ?></strong></td>
+                <td><?= $prod['category_name'] ? htmlspecialchars($prod['category_name']) : '<em style="color: #999;">Uncategorized</em>' ?></td>
+                <td><?= htmlspecialchars($prod['stock_quantity']) ?></td>
+                <td>
+                  <a href="staff_edit_product.php?id=<?= $prod['product_id'] ?>" class="btn btn-edit">Edit</a>
+                </td>
+              </tr>
+            <?php endwhile; ?>
+          </tbody>
+        </table>
+      <?php else: ?>
+        <div class="empty-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+          <p>No products found</p>
         </div>
       <?php endif; ?>
     </div>
   </div>
-
-  <script>
-    function handleEventChange() {
-      const selectedEvent = document.querySelector('input[name="event_type"]:checked').value;
-      const durationField = document.getElementById('durationField');
-      const categories = document.querySelectorAll('.table-category');
-      
-      // Show/hide duration field based on event type
-      if (selectedEvent === 'Birthday Party' || selectedEvent === 'Meeting') {
-        durationField.style.display = 'block';
-      } else {
-        durationField.style.display = 'none';
-      }
-      
-      // Filter tables based on event type
-      categories.forEach(category => {
-        const tableType = category.getAttribute('data-table-type');
-        
-        if (selectedEvent === 'Regular Dining') {
-          category.style.display = tableType.includes('Regular') ? 'block' : 'none';
-        } else if (selectedEvent === 'Birthday Party') {
-          category.style.display = tableType === 'Birthday Party Room' ? 'block' : 'none';
-        } else if (selectedEvent === 'Meeting') {
-          category.style.display = tableType === 'Meeting Room' ? 'block' : 'none';
-        }
-      });
-
-      // Reset table selection and price
-      document.querySelectorAll('input[name="table_id"]').forEach(radio => radio.checked = false);
-      updatePrice();
-    }
-
-    function updatePrice() {
-      const selectedTable = document.querySelector('input[name="table_id"]:checked');
-      const selectedEvent = document.querySelector('input[name="event_type"]:checked').value;
-      const totalHours = parseInt(document.getElementById('total_hours').value) || 2;
-      const priceDisplay = document.getElementById('priceDisplay');
-      const totalPriceElement = document.getElementById('totalPrice');
-      
-      if (selectedTable) {
-        const pricePerHour = parseFloat(selectedTable.getAttribute('data-price')) || 0;
-        
-        // Calculate total based on event type
-        let totalPrice = 0;
-        if (selectedEvent === 'Birthday Party' || selectedEvent === 'Meeting') {
-          totalPrice = pricePerHour * totalHours;
-        } else {
-          totalPrice = 0; // Regular dining is free
-        }
-        
-        if (totalPrice > 0) {
-          totalPriceElement.textContent = '₱' + totalPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-          priceDisplay.style.display = 'block';
-        } else {
-          priceDisplay.style.display = 'none';
-        }
-      } else {
-        priceDisplay.style.display = 'none';
-      }
-    }
-
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      handleEventChange();
-    });
-  </script>
 </body>
 </html>
-<?php $conn->close(); ?>
